@@ -1,7 +1,7 @@
 import type {TaskInstance} from '../types';
 
 export class RNTransferQueue {
-  private _tasks: TaskInstance[] = [];
+  private tasks: TaskInstance[] = [];
 
   add(instance: TaskInstance) {}
 
