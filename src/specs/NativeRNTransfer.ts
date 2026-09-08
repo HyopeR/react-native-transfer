@@ -10,8 +10,6 @@ import {
 //  To temporarily resolve this issue, copies of the types are kept here.
 //  https://github.com/facebook/react-native/issues/38769
 namespace TaskNs {
-  type Status = 'idle' | 'working' | 'done' | 'fail';
-
   export type Options = {
     id: string;
     url: string;
@@ -20,47 +18,49 @@ namespace TaskNs {
     metadata?: UnsafeObject;
   };
 
+  type Status = 'idle' | 'working' | 'done' | 'fail';
+
   type Progress = {
     bytesDownloaded: number;
     bytesTotal: number;
   };
 
-  type Core = {
+  export interface Core {
     options: Options;
     status: Status;
     progress: Progress;
-  };
+  }
 
-  type TaskDownload = Core & {
+  export interface CoreDownload extends Core {
     type: 'download';
-  };
+  }
 
-  type TaskUpload = Core & {
+  export interface CoreUpload extends Core {
     type: 'upload';
-  };
+  }
 
-  export type Task = TaskDownload | TaskUpload;
+  export type Task = CoreDownload | CoreUpload;
 }
 
 namespace EventNs {
-  export type OnBegin = {
+  export type OnBeginParams = {
     id: string;
     expectedBytes: number;
   };
 
-  export type OnProgress = {
+  export type OnProgressParams = {
     id: string;
     bytesDownloaded: number;
     bytesTotal: number;
   };
 
-  export type OnDone = {
+  export type OnDoneParams = {
     id: string;
     bytesDownloaded: number;
     bytesTotal: number;
   };
 
-  export type OnError = {
+  export type OnErrorParams = {
     id: string;
     error: string;
     errorCode: number;
@@ -73,10 +73,10 @@ export interface Spec extends TurboModule {
   download(options: TaskNs.Options): void;
   upload(options: TaskNs.Options): void;
 
-  readonly onBegin: EventEmitter<EventNs.OnBegin>;
-  readonly onProgress: EventEmitter<EventNs.OnProgress>;
-  readonly onDone: EventEmitter<EventNs.OnDone>;
-  readonly onError: EventEmitter<EventNs.OnError>;
+  readonly onBegin: EventEmitter<EventNs.OnBeginParams>;
+  readonly onProgress: EventEmitter<EventNs.OnProgressParams>;
+  readonly onDone: EventEmitter<EventNs.OnDoneParams>;
+  readonly onError: EventEmitter<EventNs.OnErrorParams>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNTransfer');
