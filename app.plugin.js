@@ -10,7 +10,7 @@ const pack = require('./package.json');
  * @param {import("@expo/config-plugins").ExportedConfigWithProps} config
  * @param {Record<String, any>} props
  */
-function withLocationAndroid(config, props = {}) {
+function withTransferAndroid(config, props = {}) {
   return withAndroidManifest(config, resource => {
     const manifest = resource.modResults.manifest;
 
@@ -22,7 +22,7 @@ function withLocationAndroid(config, props = {}) {
  * @param {import("@expo/config-plugins").ExportedConfigWithProps} config
  * @param {Record<String, any>} props
  */
-function withLocationIos(config, props = {}) {
+function withTransferIos(config, props = {}) {
   return withInfoPlist(config, resource => {
     const info = resource.modResults;
     return resource;
@@ -32,10 +32,10 @@ function withLocationIos(config, props = {}) {
 /**
  * @type {import("@expo/config-plugins").ConfigPlugin<Record<string, any>>}
  */
-const withLocation = (config, props) => {
-  config = withLocationAndroid(config, props);
-  config = withLocationIos(config, props);
+const withTransfer = (config, props) => {
+  config = withTransferAndroid(config, props);
+  config = withTransferIos(config, props);
   return config;
 };
 
-module.exports = createRunOncePlugin(withLocation, pack.name, pack.version);
+module.exports = createRunOncePlugin(withTransfer, pack.name, pack.version);
