@@ -1,0 +1,15 @@
+{
+  "extends": "@react-native/typescript-config",
+  "compilerOptions": {
+    "baseUrl": ".",
+    "paths": {
+      "@hyoper/rn-transfer": ["../src/index"]
+    },
+    "jsx": "react",
+    "types": ["node"],
+    "moduleResolution": "node",
+    "allowImportingTsExtensions": false
+  },
+  "include": ["./src/**/*.ts", "./src/**/*.tsx"],
+  "exclude": ["**/node_modules", "**/Pods"]
+}
