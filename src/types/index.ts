@@ -1,3 +1,3 @@
-export type * from './Event';
-export type * from './Task';
-export type * from './TaskNative';
+export type * from './Core';
+export type * from './Download';
+export type * from './Upload';

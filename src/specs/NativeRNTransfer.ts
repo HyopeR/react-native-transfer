@@ -9,74 +9,75 @@ import {
 //  Codegen results in a generate error for imported types.
 //  To temporarily resolve this issue, copies of the types are kept here.
 //  https://github.com/facebook/react-native/issues/38769
-namespace TaskNs {
-  export type Options = {
-    id: string;
-    url: string;
-    path: string;
-    headers?: UnsafeObject;
-    metadata?: UnsafeObject;
-  };
+type Status = 'idle' | 'working' | 'done' | 'fail';
 
-  type Status = 'idle' | 'working' | 'done' | 'fail';
+interface Core {
+  id: string;
+  url: string;
+  path: string;
+  headers?: UnsafeObject;
+  metadata?: UnsafeObject;
+}
 
-  type Progress = {
-    bytesDownloaded: number;
-    bytesTotal: number;
-  };
+namespace DownloadNs {
+  type Progress = {bytesDownload: number; bytesTotal: number};
 
-  export interface Core {
-    options: Options;
+  export interface Options extends Core {}
+
+  export interface Task extends Options {
+    type: 'download';
     status: Status;
     progress: Progress;
   }
 
-  export interface CoreDownload extends Core {
-    type: 'download';
+  export type Event =
+    | {type: 'begin'; id: string; bytesExpect: number}
+    | {type: 'progress'; id: string; bytesDownload: number; bytesTotal: number}
+    | {type: 'done'; id: string; bytesDownload: number; bytesTotal: number}
+    | {type: 'fail'; id: string; error: string; errorCode: number};
+}
+
+namespace UploadNs {
+  type Progress = {bytesUpload: number; bytesTotal: number};
+
+  export interface Options extends Core {}
+
+  interface OptionsTask {
+    status: Status;
+    progress: Progress;
   }
 
-  export interface CoreUpload extends Core {
+  export interface Task extends Options, OptionsTask {
     type: 'upload';
   }
 
-  export type Task = CoreDownload | CoreUpload;
-}
-
-namespace EventNs {
-  export type OnBeginParams = {
-    id: string;
-    expectedBytes: number;
-  };
-
-  export type OnProgressParams = {
-    id: string;
-    bytesDownloaded: number;
-    bytesTotal: number;
-  };
-
-  export type OnDoneParams = {
-    id: string;
-    bytesDownloaded: number;
-    bytesTotal: number;
-  };
-
-  export type OnErrorParams = {
-    id: string;
-    error: string;
-    errorCode: number;
-  };
+  export type Event =
+    | {type: 'begin'; id: string; bytesExpect: number}
+    | {type: 'progress'; id: string; bytesUpload: number; bytesTotal: number}
+    | {type: 'done'; id: string; bytesUpload: number; bytesTotal: number}
+    | {type: 'fail'; id: string; error: string; errorCode: number};
 }
 
 export interface Spec extends TurboModule {
-  configure(options: UnsafeObject): void;
-  get(): Promise<TaskNs.Task[]>;
-  download(options: TaskNs.Options): void;
-  upload(options: TaskNs.Options): void;
+  getDownloads(): Promise<DownloadNs.Task[]>;
+  clearDownloads(): boolean;
 
-  readonly onBegin: EventEmitter<EventNs.OnBeginParams>;
-  readonly onProgress: EventEmitter<EventNs.OnProgressParams>;
-  readonly onDone: EventEmitter<EventNs.OnDoneParams>;
-  readonly onError: EventEmitter<EventNs.OnErrorParams>;
+  getDownload(id: string): DownloadNs.Task | undefined;
+  createDownload(options: DownloadNs.Options): DownloadNs.Task;
+  removeDownload(id: string): DownloadNs.Task;
+  startDownload(id: string): void;
+  stopDownload(id: string): void;
+  readonly onDownload: EventEmitter<DownloadNs.Event>;
+
+  getUploads(): Promise<UploadNs.Task[]>;
+  clearUploads(): boolean;
+
+  getUpload(id: string): UploadNs.Task | undefined;
+  createUpload(options: UploadNs.Options): UploadNs.Task;
+  removeUpload(id: string): UploadNs.Task;
+  startUpload(id: string): void;
+  stopUpload(id: string): void;
+  readonly onUpload: EventEmitter<UploadNs.Event>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNTransfer');
