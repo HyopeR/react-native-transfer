@@ -3,53 +3,25 @@ import RNTransferNative from '../../../specs/NativeRNTransfer';
 import {DownloadTransfer} from './DownloadTransfer';
 import {DownloadNs} from '../../../types';
 
-class DownloaderService {
-  private readonly transfers = new Map<string, DownloadNs.Transfer>();
+export class Downloader {
+  private readonly transfers: Map<string, DownloadNs.TransferInternal>;
+  private readonly transferHandlers: DownloadNs.TransferHandlers;
 
   private readonly subscription: EventSubscription;
 
   constructor() {
+    this.transfers = new Map<string, DownloadNs.TransferInternal>();
+    this.transferHandlers = {remove: this.remove};
     this.subscription = RNTransferNative.onDownload(this.syncEvent);
     this.sync();
-  }
-
-  public download(options: DownloadNs.Options) {
-    const exist = RNTransferNative.getDownload(options.id);
-    if (exist) {
-      throw new Error('A transfer with this ID exists.');
-    }
-
-    const task = RNTransferNative.createDownload(options);
-    const transfer = new DownloadTransfer(task);
-    this.transfers.set(transfer.id, transfer);
-    return transfer;
-  }
-
-  public start(id: string) {
-    const transfer = this.getTransfer(id);
-    transfer.start();
-  }
-
-  public stop(id: string) {
-    const transfer = this.getTransfer(id);
-    transfer.stop();
-  }
-
-  private getTransfer(id: string): DownloadNs.Transfer {
-    const transfer = this.transfers.get(id);
-
-    if (!transfer) {
-      throw new Error(`A transfer with ID "${id}" was not found.`);
-    }
-
-    return transfer;
   }
 
   private sync = async () => {
     try {
       const tasks = await RNTransferNative.getDownloads();
       for (const task of tasks) {
-        this.transfers.set(task.id, new DownloadTransfer(task));
+        const transfer = new DownloadTransfer(task, this.transferHandlers);
+        this.transfers.set(task.id, transfer);
       }
     } catch (e) {
       RNTransferNative.clearDownloads();
@@ -62,5 +34,21 @@ class DownloaderService {
     if (transfer) {
       transfer.apply(event);
     }
+  };
+
+  public download(options: DownloadNs.Options) {
+    const exist = RNTransferNative.getDownload(options.id);
+    if (exist) {
+      throw new Error('A transfer with this ID exists.');
+    }
+
+    const task = RNTransferNative.createDownload(options);
+    const transfer = new DownloadTransfer(task, this.transferHandlers);
+    this.transfers.set(transfer.id, transfer);
+    return transfer;
+  }
+
+  private remove = (id: string) => {
+    this.transfers.delete(id);
   };
 }

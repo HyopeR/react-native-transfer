@@ -1,7 +1,7 @@
 import RNTransferNative from '../../../specs/NativeRNTransfer';
 import {DownloadNs} from '../../../types';
 
-export class DownloadTransfer implements DownloadNs.Transfer {
+export class DownloadTransfer implements DownloadNs.TransferInternal {
   readonly id: string;
   readonly url: string;
   readonly path: string;
@@ -15,6 +15,14 @@ export class DownloadTransfer implements DownloadNs.Transfer {
     bytesTotal: 0,
   };
 
+  private readonly handlers: DownloadNs.TransferHandlers;
+  private readonly listeners: DownloadNs.EventListenerMap = {
+    begin: new Set(),
+    progress: new Set(),
+    done: new Set(),
+    fail: new Set(),
+  };
+
   get status() {
     return this._status;
   }
@@ -23,14 +31,15 @@ export class DownloadTransfer implements DownloadNs.Transfer {
     return this._progress;
   }
 
-  constructor(options: DownloadNs.Task) {
-    this.id = options.id;
-    this.url = options.url;
-    this.path = options.path;
-    this.headers = options.headers;
-    this.metadata = options.metadata;
-    this._status = options.status;
-    this._progress = options.progress;
+  constructor(task: DownloadNs.Task, handlers: DownloadNs.TransferHandlers) {
+    this.handlers = handlers;
+    this.id = task.id;
+    this.url = task.url;
+    this.path = task.path;
+    this.headers = task.headers;
+    this.metadata = task.metadata;
+    this._status = task.status;
+    this._progress = task.progress;
   }
 
   start() {
@@ -41,6 +50,11 @@ export class DownloadTransfer implements DownloadNs.Transfer {
     RNTransferNative.stopDownload(this.id);
   }
 
+  remove() {
+    RNTransferNative.removeDownload(this.id);
+    this.handlers.remove(this.id);
+  }
+
   apply(event: DownloadNs.Event) {
     switch (event.type) {
       case 'begin':
@@ -49,6 +63,7 @@ export class DownloadTransfer implements DownloadNs.Transfer {
           bytesDownload: 0,
           bytesTotal: event.bytesExpect,
         };
+        this.emit(event);
         break;
 
       case 'progress':
@@ -57,6 +72,7 @@ export class DownloadTransfer implements DownloadNs.Transfer {
           bytesDownload: event.bytesDownload,
           bytesTotal: event.bytesTotal,
         };
+        this.emit(event);
         break;
 
       case 'done':
@@ -65,11 +81,27 @@ export class DownloadTransfer implements DownloadNs.Transfer {
           bytesDownload: event.bytesDownload,
           bytesTotal: event.bytesTotal,
         };
+        this.emit(event);
         break;
 
       case 'fail':
         this._status = 'fail';
+        this.emit(event);
         break;
+    }
+  }
+
+  on<T extends DownloadNs.EventType>(
+    type: T,
+    listener: DownloadNs.EventListener<T>,
+  ): this {
+    this.listeners[type].add(listener);
+    return this;
+  }
+
+  private emit(event: DownloadNs.Event) {
+    for (const listener of this.listeners[event.type]) {
+      listener(event as any);
     }
   }
 }

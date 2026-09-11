@@ -9,8 +9,6 @@ import {
 //  Codegen results in a generate error for imported types.
 //  To temporarily resolve this issue, copies of the types are kept here.
 //  https://github.com/facebook/react-native/issues/38769
-type Status = 'idle' | 'working' | 'done' | 'fail';
-
 interface Core {
   id: string;
   url: string;
@@ -20,6 +18,7 @@ interface Core {
 }
 
 namespace DownloadNs {
+  type Status = 'idle' | 'working' | 'done' | 'fail';
   type Progress = {bytesDownload: number; bytesTotal: number};
 
   export interface Options extends Core {}
@@ -38,6 +37,7 @@ namespace DownloadNs {
 }
 
 namespace UploadNs {
+  type Status = 'idle' | 'working' | 'done' | 'fail';
   type Progress = {bytesUpload: number; bytesTotal: number};
 
   export interface Options extends Core {}
