@@ -9,8 +9,6 @@ import {
 //  Codegen results in a generate error for imported types.
 //  To temporarily resolve this issue, copies of the types are kept here.
 //  https://github.com/facebook/react-native/issues/38769
-
-
 interface Core {
   id: string;
   url: string;
