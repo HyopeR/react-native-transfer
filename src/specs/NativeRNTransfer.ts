@@ -9,6 +9,8 @@ import {
 //  Codegen results in a generate error for imported types.
 //  To temporarily resolve this issue, copies of the types are kept here.
 //  https://github.com/facebook/react-native/issues/38769
+
+
 interface Core {
   id: string;
   url: string;
@@ -17,67 +19,62 @@ interface Core {
   metadata?: UnsafeObject;
 }
 
-namespace DownloadNs {
-  type Status = 'idle' | 'working' | 'done' | 'fail';
-  type Progress = {bytesDownload: number; bytesTotal: number};
+type DownloadStatus = 'idle' | 'working' | 'done' | 'fail';
 
-  export interface Options extends Core {}
+type DownloadProgress = {bytesDownload: number; bytesTotal: number};
 
-  export interface Task extends Options {
-    type: 'download';
-    status: Status;
-    progress: Progress;
-  }
+interface DownloadOptions extends Core {}
 
-  export type Event =
-    | {type: 'begin'; id: string; bytesExpect: number}
-    | {type: 'progress'; id: string; bytesDownload: number; bytesTotal: number}
-    | {type: 'done'; id: string; bytesDownload: number; bytesTotal: number}
-    | {type: 'fail'; id: string; error: string; errorCode: number};
+interface DownloadTask extends DownloadOptions {
+  type: 'download';
+  status: DownloadStatus;
+  progress: DownloadProgress;
 }
 
-namespace UploadNs {
-  type Status = 'idle' | 'working' | 'done' | 'fail';
-  type Progress = {bytesUpload: number; bytesTotal: number};
+type DownloadEvent =
+  | {type: 'begin'; id: string; bytesExpect: number}
+  | {type: 'progress'; id: string; bytesDownload: number; bytesTotal: number}
+  | {type: 'done'; id: string; bytesDownload: number; bytesTotal: number}
+  | {type: 'fail'; id: string; error: string; errorCode: number};
 
-  export interface Options extends Core {}
+type UploadStatus = 'idle' | 'working' | 'done' | 'fail';
 
-  interface OptionsTask {
-    status: Status;
-    progress: Progress;
-  }
+type UploadProgress = {bytesUpload: number; bytesTotal: number};
 
-  export interface Task extends Options, OptionsTask {
-    type: 'upload';
-  }
+interface UploadOptions extends Core {}
 
-  export type Event =
-    | {type: 'begin'; id: string; bytesExpect: number}
-    | {type: 'progress'; id: string; bytesUpload: number; bytesTotal: number}
-    | {type: 'done'; id: string; bytesUpload: number; bytesTotal: number}
-    | {type: 'fail'; id: string; error: string; errorCode: number};
+export interface UploadTask extends UploadOptions {
+  type: 'upload';
+  status: UploadStatus;
+  progress: UploadProgress;
 }
+
+export type UploadEvent =
+  | {type: 'begin'; id: string; bytesExpect: number}
+  | {type: 'progress'; id: string; bytesUpload: number; bytesTotal: number}
+  | {type: 'done'; id: string; bytesUpload: number; bytesTotal: number}
+  | {type: 'fail'; id: string; error: string; errorCode: number};
 
 export interface Spec extends TurboModule {
-  getDownloads(): DownloadNs.Task[];
+  getDownloads(): DownloadTask[];
   clearDownloads(): boolean;
 
-  getDownload(id: string): DownloadNs.Task | undefined;
-  createDownload(options: DownloadNs.Options): DownloadNs.Task;
-  removeDownload(id: string): DownloadNs.Task;
+  getDownload(id: string): DownloadTask | undefined;
+  createDownload(options: DownloadOptions): DownloadTask;
+  removeDownload(id: string): DownloadTask;
   startDownload(id: string): void;
   stopDownload(id: string): void;
-  readonly onDownload: EventEmitter<DownloadNs.Event>;
+  readonly onDownload: EventEmitter<DownloadEvent>;
 
-  getUploads(): UploadNs.Task[];
+  getUploads(): UploadTask[];
   clearUploads(): boolean;
 
-  getUpload(id: string): UploadNs.Task | undefined;
-  createUpload(options: UploadNs.Options): UploadNs.Task;
-  removeUpload(id: string): UploadNs.Task;
+  getUpload(id: string): UploadTask | undefined;
+  createUpload(options: UploadOptions): UploadTask;
+  removeUpload(id: string): UploadTask;
   startUpload(id: string): void;
   stopUpload(id: string): void;
-  readonly onUpload: EventEmitter<UploadNs.Event>;
+  readonly onUpload: EventEmitter<UploadEvent>;
 }
 
 export default TurboModuleRegistry.getEnforcing<Spec>('RNTransfer');
