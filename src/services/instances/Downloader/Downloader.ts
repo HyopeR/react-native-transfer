@@ -18,7 +18,7 @@ export class Downloader {
 
   private sync = async () => {
     try {
-      const tasks = await RNTransferNative.getDownloads();
+      const tasks = RNTransferNative.getDownloads();
       for (const task of tasks) {
         this.createTransfer(task);
       }
@@ -35,12 +35,11 @@ export class Downloader {
     }
   };
 
-  public download(options: DownloadNs.Options) {
-    const exist = RNTransferNative.getDownload(options.id);
-    if (exist) {
-      throw new Error('A transfer with this ID exists.');
-    }
+  public get() {
+    return [...this.transfers.values()];
+  }
 
+  public download(options: DownloadNs.Options) {
     const task = this.createTask(options);
     return this.createTransfer(task);
   }

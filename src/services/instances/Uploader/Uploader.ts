@@ -35,12 +35,11 @@ export class Uploader {
     }
   };
 
-  public upload(options: UploadNs.Options) {
-    const exist = RNTransferNative.getUpload(options.id);
-    if (exist) {
-      throw new Error('A transfer with this ID exists.');
-    }
+  public get() {
+    return [...this.transfers.values()];
+  }
 
+  public upload(options: UploadNs.Options) {
     const task = this.createTask(options);
     return this.createTransfer(task);
   }

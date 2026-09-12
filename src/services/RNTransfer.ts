@@ -1,51 +1,78 @@
+import {Helper} from './instances/Helper';
 import {Downloader} from './instances/Downloader';
 import {Uploader} from './instances/Uploader';
 import {DownloadNs, UploadNs} from '../types';
 
 export class RNTransferModule {
-  private Downloader: Downloader;
-  private Uploader: Uploader;
+  private readonly helper: Helper;
+  private readonly downloader: Downloader;
+  private readonly uploader: Uploader;
 
   constructor() {
-    this.Downloader = new Downloader();
-    this.Uploader = new Uploader();
+    this.helper = new Helper();
+    this.downloader = new Downloader();
+    this.uploader = new Uploader();
   }
 
-  getDownloads() {}
-
-  createDownload(options: DownloadNs.Options) {
-    return this.Downloader.download(options) as DownloadNs.Transfer;
+  get directories() {
+    return this.helper.directories;
   }
 
-  getUploads() {}
+  uuid() {
+    return this.helper.uuid();
+  }
 
-  upload(options: UploadNs.Options) {
-    return this.Uploader.upload(options) as UploadNs.Transfer;
+  getDownloads(): DownloadNs.Transfer[] {
+    return this.downloader.get();
+  }
+
+  createDownload(options: DownloadNs.Options): DownloadNs.Transfer {
+    return this.downloader.download(options);
+  }
+
+  getUploads(): UploadNs.Transfer[] {
+    return this.uploader.get();
+  }
+
+  createUpload(options: UploadNs.Options): UploadNs.Transfer {
+    return this.uploader.upload(options);
   }
 }
 
 // Examples
 // const RNTransfer = new RNTransferModule();
 //
+// RNTransfer.getDownloads();
+// RNTransfer.getUploads();
+//
 // const transfer1 = RNTransfer.createDownload({
-//   id: '1',
-//   url: 'sample-1',
-//   path: 'path-1',
+//   id: RNTransfer.uuid(),
+//   url: '.com/sample-1.png',
+//   path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
 // });
 //
 // const transfer2 = RNTransfer.createDownload({
-//   id: '2',
-//   url: 'sample-2',
-//   path: 'path-2',
+//   id: RNTransfer.uuid(),
+//   url: '.com/sample-2.png',
+//   path: RNTransfer.directories.app.concat(`/files/sample-2.png`),
 // });
 //
 // transfer1
-//   .on('begin', e => {})
-//   .on('progress', e => {})
+//   .on('begin', e => {
+//     console.log(e.bytesExpect);
+//   })
+//   .on('progress', e => {
+//     console.log(e.bytesDownload);
+//     console.log(e.bytesTotal);
+//   })
 //   .on('done', e => {
+//     console.log(e.bytesDownload);
+//     console.log(e.bytesTotal);
 //     transfer1.remove();
 //   })
 //   .on('fail', e => {
+//     console.log(e.error);
+//     console.log(e.errorCode);
 //     transfer1.remove();
 //   })
 //   .start();

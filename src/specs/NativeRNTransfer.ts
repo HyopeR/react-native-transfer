@@ -59,7 +59,7 @@ namespace UploadNs {
 }
 
 export interface Spec extends TurboModule {
-  getDownloads(): Promise<DownloadNs.Task[]>;
+  getDownloads(): DownloadNs.Task[];
   clearDownloads(): boolean;
 
   getDownload(id: string): DownloadNs.Task | undefined;
@@ -69,7 +69,7 @@ export interface Spec extends TurboModule {
   stopDownload(id: string): void;
   readonly onDownload: EventEmitter<DownloadNs.Event>;
 
-  getUploads(): Promise<UploadNs.Task[]>;
+  getUploads(): UploadNs.Task[];
   clearUploads(): boolean;
 
   getUpload(id: string): UploadNs.Task | undefined;
