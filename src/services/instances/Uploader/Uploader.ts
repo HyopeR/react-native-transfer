@@ -20,8 +20,7 @@ export class Uploader {
     try {
       const tasks = await RNTransferNative.getUploads();
       for (const task of tasks) {
-        const transfer = new UploadTransfer(task, this.transferHandlers);
-        this.transfers.set(task.id, transfer);
+        this.createTransfer(task);
       }
     } catch (e) {
       RNTransferNative.clearUploads();
@@ -42,13 +41,30 @@ export class Uploader {
       throw new Error('A transfer with this ID exists.');
     }
 
-    const task = RNTransferNative.createUpload(options);
+    const task = this.createTask(options);
+    return this.createTransfer(task);
+  }
+
+  private createTask = (options: UploadNs.Options) => {
+    return RNTransferNative.createUpload(options);
+  };
+
+  private createTransfer = (task: UploadNs.Task) => {
     const transfer = new UploadTransfer(task, this.transferHandlers);
     this.transfers.set(transfer.id, transfer);
     return transfer;
-  }
+  };
+
+  private removeTask = (id: string) => {
+    return RNTransferNative.removeUpload(id);
+  };
+
+  private removeTransfer = (id: string) => {
+    return this.transfers.delete(id);
+  };
 
   private remove = (id: string) => {
-    this.transfers.delete(id);
+    this.removeTask(id);
+    this.removeTransfer(id);
   };
 }

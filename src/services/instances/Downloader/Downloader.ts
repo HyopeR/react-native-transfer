@@ -20,8 +20,7 @@ export class Downloader {
     try {
       const tasks = await RNTransferNative.getDownloads();
       for (const task of tasks) {
-        const transfer = new DownloadTransfer(task, this.transferHandlers);
-        this.transfers.set(task.id, transfer);
+        this.createTransfer(task);
       }
     } catch (e) {
       RNTransferNative.clearDownloads();
@@ -42,13 +41,30 @@ export class Downloader {
       throw new Error('A transfer with this ID exists.');
     }
 
-    const task = RNTransferNative.createDownload(options);
+    const task = this.createTask(options);
+    return this.createTransfer(task);
+  }
+
+  private createTask = (options: DownloadNs.Options) => {
+    return RNTransferNative.createDownload(options);
+  };
+
+  private createTransfer = (task: DownloadNs.Task) => {
     const transfer = new DownloadTransfer(task, this.transferHandlers);
     this.transfers.set(transfer.id, transfer);
     return transfer;
-  }
+  };
+
+  private removeTask = (id: string) => {
+    return RNTransferNative.removeDownload(id);
+  };
+
+  private removeTransfer = (id: string) => {
+    return this.transfers.delete(id);
+  };
 
   private remove = (id: string) => {
-    this.transfers.delete(id);
+    this.removeTask(id);
+    this.removeTransfer(id);
   };
 }

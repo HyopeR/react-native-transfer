@@ -51,7 +51,6 @@ export class UploadTransfer implements UploadNs.TransferInternal {
   }
 
   remove() {
-    RNTransferNative.removeUpload(this.id);
     this.handlers.remove(this.id);
   }
 
