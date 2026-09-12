@@ -1,5 +1,3 @@
-export type CoreStatus = 'idle' | 'working' | 'done' | 'fail';
-
 export interface Core {
   id: string;
   url: string;

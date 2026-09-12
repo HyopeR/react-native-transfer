@@ -1,7 +1,7 @@
-import {Core, CoreStatus} from './Core';
+import {Core} from './Core';
 
 export namespace DownloadNs {
-  export type Status = CoreStatus;
+  export type Status = 'idle' | 'working' | 'done' | 'fail';
 
   export type Progress = {
     bytesDownload: number;

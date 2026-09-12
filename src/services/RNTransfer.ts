@@ -39,9 +39,9 @@ export class RNTransferModule {
   }
 }
 
+export const RNTransfer = new RNTransferModule();
+
 // Examples
-// const RNTransfer = new RNTransferModule();
-//
 // RNTransfer.getDownloads();
 // RNTransfer.getUploads();
 //
