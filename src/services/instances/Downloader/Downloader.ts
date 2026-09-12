@@ -1,16 +1,16 @@
 import {EventSubscription} from 'react-native';
 import RNTransferNative from '../../../specs/NativeRNTransfer';
 import {DownloadTransfer} from './DownloadTransfer';
-import {DownloadNs} from '../../../types';
+import {DownloadNs, DownloadInternalNs} from '../../../types';
 
 export class Downloader {
-  private readonly transfers: Map<string, DownloadNs.TransferInternal>;
-  private readonly transferHandlers: DownloadNs.TransferHandlers;
+  private readonly transfers: Map<string, DownloadInternalNs.Transfer>;
+  private readonly transferHandlers: DownloadInternalNs.TransferHandlers;
 
   private readonly subscription: EventSubscription;
 
   constructor() {
-    this.transfers = new Map<string, DownloadNs.TransferInternal>();
+    this.transfers = new Map<string, DownloadInternalNs.Transfer>();
     this.transferHandlers = {remove: this.remove};
     this.subscription = RNTransferNative.onDownload(this.syncEvent);
     this.sync();

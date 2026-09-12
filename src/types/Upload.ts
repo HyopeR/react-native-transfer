@@ -51,20 +51,22 @@ export namespace UploadNs {
 
   export type EventListener<T extends EventType> = (event: EventMap[T]) => void;
 
-  export type EventListenerMap = {
-    [T in EventType]: Set<EventListener<T>>;
-  };
-
   export interface Transfer extends Task {
     on<T extends EventType>(type: T, listener: EventListener<T>): this;
     start(): void;
     stop(): void;
     remove(): void;
   }
+}
 
-  export interface TransferInternal extends Transfer {
-    apply(event: Event): void;
+export namespace UploadInternalNs {
+  export interface Transfer extends UploadNs.Transfer {
+    apply(event: UploadNs.Event): void;
   }
+
+  export type TransferListeners = {
+    [T in UploadNs.EventType]: Set<UploadNs.EventListener<T>>;
+  };
 
   export interface TransferHandlers {
     remove: (id: string) => void;

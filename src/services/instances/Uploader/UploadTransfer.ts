@@ -1,7 +1,7 @@
 import RNTransferNative from '../../../specs/NativeRNTransfer';
-import {UploadNs} from '../../../types';
+import {UploadNs, UploadInternalNs} from '../../../types';
 
-export class UploadTransfer implements UploadNs.TransferInternal {
+export class UploadTransfer implements UploadInternalNs.Transfer {
   readonly id: string;
   readonly url: string;
   readonly path: string;
@@ -15,8 +15,8 @@ export class UploadTransfer implements UploadNs.TransferInternal {
     bytesTotal: 0,
   };
 
-  private readonly handlers: UploadNs.TransferHandlers;
-  private readonly listeners: UploadNs.EventListenerMap = {
+  private readonly handlers: UploadInternalNs.TransferHandlers;
+  private readonly listeners: UploadInternalNs.TransferListeners = {
     begin: new Set(),
     progress: new Set(),
     done: new Set(),
@@ -31,7 +31,10 @@ export class UploadTransfer implements UploadNs.TransferInternal {
     return this._progress;
   }
 
-  constructor(task: UploadNs.Task, handlers: UploadNs.TransferHandlers) {
+  constructor(
+    task: UploadNs.Task,
+    handlers: UploadInternalNs.TransferHandlers,
+  ) {
     this.handlers = handlers;
     this.id = task.id;
     this.url = task.url;

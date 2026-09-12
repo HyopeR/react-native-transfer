@@ -1,16 +1,16 @@
 import {EventSubscription} from 'react-native';
 import RNTransferNative from '../../../specs/NativeRNTransfer';
 import {UploadTransfer} from './UploadTransfer';
-import {UploadNs} from '../../../types';
+import {UploadNs, UploadInternalNs} from '../../../types';
 
 export class Uploader {
-  private readonly transfers: Map<string, UploadNs.TransferInternal>;
-  private readonly transferHandlers: UploadNs.TransferHandlers;
+  private readonly transfers: Map<string, UploadInternalNs.Transfer>;
+  private readonly transferHandlers: UploadInternalNs.TransferHandlers;
 
   private readonly subscription: EventSubscription;
 
   constructor() {
-    this.transfers = new Map<string, UploadNs.TransferInternal>();
+    this.transfers = new Map<string, UploadInternalNs.Transfer>();
     this.transferHandlers = {remove: this.remove};
     this.subscription = RNTransferNative.onUpload(this.syncEvent);
     this.sync();

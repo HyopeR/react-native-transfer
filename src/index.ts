@@ -1,2 +1,2 @@
 export {RNTransfer} from './services/RNTransfer';
-export type * from './types';
+export type {DownloadNs, UploadNs} from './types';

@@ -51,20 +51,22 @@ export namespace DownloadNs {
 
   export type EventListener<T extends EventType> = (event: EventMap[T]) => void;
 
-  export type EventListenerMap = {
-    [T in EventType]: Set<EventListener<T>>;
-  };
-
   export interface Transfer extends Task {
     on<T extends EventType>(type: T, listener: EventListener<T>): this;
     start(): void;
     stop(): void;
     remove(): void;
   }
+}
 
-  export interface TransferInternal extends Transfer {
-    apply(event: Event): void;
+export namespace DownloadInternalNs {
+  export interface Transfer extends DownloadNs.Transfer {
+    apply(event: DownloadNs.Event): void;
   }
+
+  export type TransferListeners = {
+    [T in DownloadNs.EventType]: Set<DownloadNs.EventListener<T>>;
+  };
 
   export interface TransferHandlers {
     remove: (id: string) => void;

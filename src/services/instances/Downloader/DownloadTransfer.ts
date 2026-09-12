@@ -1,7 +1,7 @@
 import RNTransferNative from '../../../specs/NativeRNTransfer';
-import {DownloadNs} from '../../../types';
+import {DownloadNs, DownloadInternalNs} from '../../../types';
 
-export class DownloadTransfer implements DownloadNs.TransferInternal {
+export class DownloadTransfer implements DownloadInternalNs.Transfer {
   readonly id: string;
   readonly url: string;
   readonly path: string;
@@ -15,8 +15,8 @@ export class DownloadTransfer implements DownloadNs.TransferInternal {
     bytesTotal: 0,
   };
 
-  private readonly handlers: DownloadNs.TransferHandlers;
-  private readonly listeners: DownloadNs.EventListenerMap = {
+  private readonly handlers: DownloadInternalNs.TransferHandlers;
+  private readonly listeners: DownloadInternalNs.TransferListeners = {
     begin: new Set(),
     progress: new Set(),
     done: new Set(),
@@ -31,7 +31,10 @@ export class DownloadTransfer implements DownloadNs.TransferInternal {
     return this._progress;
   }
 
-  constructor(task: DownloadNs.Task, handlers: DownloadNs.TransferHandlers) {
+  constructor(
+    task: DownloadNs.Task,
+    handlers: DownloadInternalNs.TransferHandlers,
+  ) {
     this.handlers = handlers;
     this.id = task.id;
     this.url = task.url;
