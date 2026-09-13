@@ -1,4 +1,4 @@
-package com.hyoper.transfer.uploader.models;
+package com.hyoper.transfer.services.uploader.models;
 
 public class UploadProgress {
     public final long bytesUpload;

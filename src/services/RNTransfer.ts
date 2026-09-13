@@ -41,38 +41,34 @@ export class RNTransferModule {
 
 export const RNTransfer = new RNTransferModule();
 
-// Examples
-// RNTransfer.getDownloads();
-// RNTransfer.getUploads();
-//
-// const transfer1 = RNTransfer.createDownload({
-//   id: RNTransfer.uuid(),
-//   url: '.com/sample-1.png',
-//   path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
-// });
-//
-// const transfer2 = RNTransfer.createDownload({
-//   id: RNTransfer.uuid(),
-//   url: '.com/sample-2.png',
-//   path: RNTransfer.directories.app.concat(`/files/sample-2.png`),
-// });
-//
-// transfer1
-//   .on('begin', e => {
-//     console.log(e.bytesExpect);
-//   })
-//   .on('progress', e => {
-//     console.log(e.bytesDownload);
-//     console.log(e.bytesTotal);
-//   })
-//   .on('done', e => {
-//     console.log(e.bytesDownload);
-//     console.log(e.bytesTotal);
-//     transfer1.remove();
-//   })
-//   .on('fail', e => {
-//     console.log(e.error);
-//     console.log(e.errorCode);
-//     transfer1.remove();
-//   })
-//   .start();
+const transfer1 = RNTransfer.createDownload({
+  id: RNTransfer.uuid(),
+  url: '.com/sample-1.png',
+  path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
+});
+
+const transfer2 = RNTransfer.createDownload({
+  id: RNTransfer.uuid(),
+  url: '.com/sample-2.png',
+  path: RNTransfer.directories.app.concat(`/files/sample-2.png`),
+});
+
+transfer1
+  .on('begin', e => {
+    console.log(e.bytesExpect);
+  })
+  .on('progress', e => {
+    console.log(e.bytesDownload);
+    console.log(e.bytesTotal);
+  })
+  .on('done', e => {
+    console.log(e.bytesDownload);
+    console.log(e.bytesTotal);
+    transfer1.remove();
+  })
+  .on('fail', e => {
+    console.log(e.error);
+    console.log(e.errorCode);
+    transfer1.remove();
+  })
+  .start();

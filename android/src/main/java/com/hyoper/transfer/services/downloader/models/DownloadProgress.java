@@ -1,4 +1,4 @@
-package com.hyoper.transfer.downloader.models;
+package com.hyoper.transfer.services.downloader.models;
 
 public class DownloadProgress {
     public final long bytesDownload;

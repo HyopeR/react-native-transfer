@@ -1,31 +1,32 @@
-package com.hyoper.transfer.downloader.models;
+package com.hyoper.transfer.services.uploader.models;
 
 import androidx.annotation.Nullable;
 
 import java.util.Map;
 
-public class DownloadTask {
+public class UploadTask {
     public final String id;
     public final String url;
     public final String path;
 
     @Nullable
-    public final Map<String, Object> headers;
+    public final Map<String, ?> headers;
 
     @Nullable
-    public final Map<String, Object> metadata;
+    public final Map<String, ?> metadata;
 
-    public DownloadStatus status;
-    public DownloadProgress progress;
+    public final String type = "upload";
+    public UploadStatus status;
+    public UploadProgress progress;
 
-    public DownloadTask(
+    public UploadTask(
             String id,
             String url,
             String path,
-            @Nullable Map<String, Object> headers,
-            @Nullable Map<String, Object> metadata,
-            DownloadStatus status,
-            DownloadProgress progress
+            @Nullable Map<String, ?> headers,
+            @Nullable Map<String, ?> metadata,
+            UploadStatus status,
+            UploadProgress progress
     ) {
         this.id = id;
         this.url = url;
@@ -36,19 +37,19 @@ public class DownloadTask {
         this.progress = progress;
     }
 
-    public DownloadTask(
+    public UploadTask(
             String id,
             String url,
             String path,
-            @Nullable Map<String, Object> headers,
-            @Nullable Map<String, Object> metadata
+            @Nullable Map<String, ?> headers,
+            @Nullable Map<String, ?> metadata
     ) {
         this.id = id;
         this.url = url;
         this.path = path;
         this.headers = headers;
         this.metadata = metadata;
-        this.status = DownloadStatus.IDLE;
-        this.progress = new DownloadProgress();
+        this.status = UploadStatus.IDLE;
+        this.progress = new UploadProgress();
     }
 }

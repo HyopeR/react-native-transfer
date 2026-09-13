@@ -57,9 +57,9 @@ export interface Spec extends TurboModule {
   getDownloads(): DownloadTask[];
   clearDownloads(): boolean;
 
-  getDownload(id: string): DownloadTask | undefined;
   createDownload(options: DownloadOptions): DownloadTask;
-  removeDownload(id: string): DownloadTask;
+  removeDownload(id: string): DownloadTask | undefined;
+  getDownload(id: string): DownloadTask | undefined;
   startDownload(id: string): void;
   stopDownload(id: string): void;
   readonly onDownload: EventEmitter<DownloadEvent>;
@@ -67,9 +67,9 @@ export interface Spec extends TurboModule {
   getUploads(): UploadTask[];
   clearUploads(): boolean;
 
-  getUpload(id: string): UploadTask | undefined;
   createUpload(options: UploadOptions): UploadTask;
-  removeUpload(id: string): UploadTask;
+  removeUpload(id: string): UploadTask | undefined;
+  getUpload(id: string): UploadTask | undefined;
   startUpload(id: string): void;
   stopUpload(id: string): void;
   readonly onUpload: EventEmitter<UploadEvent>;
