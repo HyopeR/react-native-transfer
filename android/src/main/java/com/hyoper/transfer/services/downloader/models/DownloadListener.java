@@ -1,6 +1,6 @@
 package com.hyoper.transfer.services.downloader.models;
 
-public interface DownloadCallback {
+public interface DownloadListener {
     void onBegin(String id, long bytesExpect);
 
     void onProgress(String id, long bytesDownload, long bytesTotal);

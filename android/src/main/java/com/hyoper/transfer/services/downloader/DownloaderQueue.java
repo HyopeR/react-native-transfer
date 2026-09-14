@@ -1,6 +1,6 @@
 package com.hyoper.transfer.services.downloader;
 
-import com.hyoper.transfer.services.downloader.models.DownloadCallback;
+import com.hyoper.transfer.services.downloader.models.DownloadListener;
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -21,24 +21,24 @@ public class DownloaderQueue {
         executor.allowCoreThreadTimeOut(true);
     }
 
-    public void add(DownloadTransfer transfer, DownloadCallback callbacks) {
+    public void add(DownloadTransfer transfer, DownloadListener callbacks) {
         DownloadWorker worker = new DownloadWorker(transfer, callbacks, () -> execWorkers.remove(transfer.id));
         execWorkers.put(transfer.id, worker);
         executor.execute(worker);
     }
 
     public void delete(String id) {
-        DownloadWorker worker = execWorkers.remove(id);
+        DownloadWorker worker = execWorkers.get(id);
         if (worker != null) {
             worker.cancel();
+            execWorkers.remove(id);
             executor.remove(worker);
         }
     }
 
-    public void reset() {
+    public void clear() {
         for (DownloadWorker worker : execWorkers.values()) {
             worker.cancel();
-            executor.remove(worker);
         }
         execWorkers.clear();
         executor.shutdownNow();

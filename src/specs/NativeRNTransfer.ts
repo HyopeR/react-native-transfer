@@ -9,6 +9,11 @@ import {
 //  Codegen results in a generate error for imported types.
 //  To temporarily resolve this issue, copies of the types are kept here.
 //  https://github.com/facebook/react-native/issues/38769
+export interface Directories {
+  app: string;
+  cache: string;
+}
+
 interface Core {
   id: string;
   url: string;
@@ -54,9 +59,10 @@ export type UploadEvent =
   | {type: 'fail'; id: string; error: string; errorCode: number};
 
 export interface Spec extends TurboModule {
+  getDirectories(): Directories;
+
   getDownloads(): DownloadTask[];
   clearDownloads(): boolean;
-
   createDownload(options: DownloadOptions): DownloadTask;
   removeDownload(id: string): DownloadTask | undefined;
   getDownload(id: string): DownloadTask | undefined;
@@ -66,7 +72,6 @@ export interface Spec extends TurboModule {
 
   getUploads(): UploadTask[];
   clearUploads(): boolean;
-
   createUpload(options: UploadOptions): UploadTask;
   removeUpload(id: string): UploadTask | undefined;
   getUpload(id: string): UploadTask | undefined;

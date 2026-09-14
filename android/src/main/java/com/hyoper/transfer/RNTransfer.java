@@ -11,6 +11,7 @@ import com.facebook.react.module.annotations.ReactModule;
 
 import com.hyoper.transfer.helpers.RNTransferConverter;
 import com.hyoper.transfer.helpers.RNTransferConverterGuard;
+import com.hyoper.transfer.helpers.RNTransferDirectories;
 import com.hyoper.transfer.helpers.RNTransferUtils;
 import com.hyoper.transfer.services.downloader.DownloadTransfer;
 import com.hyoper.transfer.services.downloader.Downloader;
@@ -19,6 +20,8 @@ import com.hyoper.transfer.services.uploader.UploadTransfer;
 import com.hyoper.transfer.services.uploader.Uploader;
 import com.hyoper.transfer.services.uploader.models.UploadTask;
 import com.tencent.mmkv.MMKV;
+
+import java.util.List;
 
 @ReactModule(name = RNTransfer.NAME)
 public class RNTransfer extends NativeRNTransferSpec {
@@ -33,10 +36,12 @@ public class RNTransfer extends NativeRNTransferSpec {
         downloader = new Downloader(reactContext, storage);
         uploader = new Uploader(reactContext, storage);
         RNTransferUtils.setName(NAME);
+        RNTransferUtils.setEmitters(this::emitOnDownload, this::emitOnUpload);
     }
 
     @Override
     public void invalidate() {
+        downloader.clear();
         downloader = null;
         uploader = null;
         RNTransferUtils.reset();
@@ -49,13 +54,21 @@ public class RNTransfer extends NativeRNTransferSpec {
     }
 
     @Override
+    @NonNull
+    public WritableMap getDirectories() {
+        return RNTransferDirectories.getDirectories(getReactApplicationContext());
+    }
+
+    @Override
     public WritableArray getDownloads() {
-        return null;
+        List<DownloadTransfer> transfers = downloader.get();
+        return RNTransferConverter.mapFromDownloadTasks(transfers);
     }
 
     @Override
     public boolean clearDownloads() {
-        return false;
+        downloader.clear();
+        return true;
     }
 
     @Override
@@ -63,7 +76,7 @@ public class RNTransfer extends NativeRNTransferSpec {
         try {
             RNTransferConverterGuard.ensureMapTo(options);
             DownloadTask taskRaw = RNTransferConverter.mapToDownloadTask(options);
-            DownloadTransfer transfer = this.downloader.create(taskRaw);
+            DownloadTransfer transfer = this.downloader.createDownload(taskRaw);
             DownloadTask task = transfer.toTask();
             return RNTransferConverter.mapFromDownloadTask(task);
         } catch (Exception e) {
@@ -75,7 +88,7 @@ public class RNTransfer extends NativeRNTransferSpec {
     @Override
     public WritableMap removeDownload(String id) {
         try {
-            DownloadTransfer transfer = this.downloader.remove(id);
+            DownloadTransfer transfer = this.downloader.removeDownload(id);
             RNTransferConverterGuard.ensureMapFrom(transfer);
             DownloadTask task = transfer.toTask();
             return RNTransferConverter.mapFromDownloadTask(task);
@@ -88,7 +101,7 @@ public class RNTransfer extends NativeRNTransferSpec {
     @Override
     public WritableMap getDownload(String id) {
         try {
-            DownloadTransfer transfer = this.downloader.get(id);
+            DownloadTransfer transfer = this.downloader.getDownload(id);
             RNTransferConverterGuard.ensureMapFrom(transfer);
             DownloadTask task = transfer.toTask();
             return RNTransferConverter.mapFromDownloadTask(task);
@@ -100,12 +113,12 @@ public class RNTransfer extends NativeRNTransferSpec {
 
     @Override
     public void startDownload(String id) {
-
+        this.downloader.startDownload(id);
     }
 
     @Override
     public void stopDownload(String id) {
-
+        this.downloader.stopDownload(id);
     }
 
     @Override

@@ -7,7 +7,9 @@ import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
 import com.facebook.react.bridge.WritableMap;
 
+import com.hyoper.transfer.services.downloader.DownloadTransfer;
 import com.hyoper.transfer.services.downloader.models.DownloadTask;
+import com.hyoper.transfer.services.uploader.UploadTransfer;
 import com.hyoper.transfer.services.uploader.models.UploadTask;
 
 import java.util.List;
@@ -35,6 +37,14 @@ public class RNTransferConverter {
         return map;
     }
 
+    public static WritableArray mapFromDownloadTasks(List<DownloadTransfer> transfers) {
+        WritableArray array = Arguments.createArray();
+        for (DownloadTransfer transfer : transfers) {
+            array.pushMap(mapFromDownloadTask(transfer.toTask()));
+        }
+        return array;
+    }
+
     public static UploadTask mapToUploadTask(ReadableMap map) {
         String id = map.getString("id");
         String url = map.getString("url");
@@ -53,6 +63,14 @@ public class RNTransferConverter {
         progress.putDouble("bytesTotal", task.progress.bytesTotal);
         map.putMap("progress", progress);
         return map;
+    }
+
+    public static WritableArray mapFromUploadTasks(List<UploadTransfer> transfers) {
+        WritableArray array = Arguments.createArray();
+        for (UploadTransfer transfer : transfers) {
+            array.pushMap(mapFromUploadTask(transfer.toTask()));
+        }
+        return array;
     }
 
     private static WritableMap createMapFromTask(

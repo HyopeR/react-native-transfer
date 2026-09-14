@@ -2,11 +2,7 @@ import RNTransferNative from '../../../specs/NativeRNTransfer';
 
 export class Helper {
   get directories() {
-    return {
-      app: '', // RNTransferNative.directories.app
-      cache: '', // RNTransferNative.directories.cache
-      documents: '', // RNTransferNative.directories.documents
-    };
+    return RNTransferNative.getDirectories();
   }
 
   uuid() {
