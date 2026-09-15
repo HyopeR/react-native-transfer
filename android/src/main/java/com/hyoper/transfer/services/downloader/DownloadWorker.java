@@ -1,8 +1,11 @@
 package com.hyoper.transfer.services.downloader;
 
+import android.util.Log;
+
 import androidx.annotation.Nullable;
 
 import com.hyoper.transfer.services.downloader.models.DownloadListener;
+import com.hyoper.transfer.utils.FileUtils;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -11,14 +14,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.TimeUnit;
 
 public class DownloadWorker implements Runnable {
     private final DownloadTransfer transfer;
     private final DownloadListener listener;
     private final Runnable clean;
-    private volatile HttpURLConnection connection;
+    private HttpURLConnection connection;
+    private volatile boolean isThreadSentTerminate = false;
     private volatile Thread thread;
-    private volatile boolean threadCancelled = false;
+    private final CountDownLatch threadWaiter = new CountDownLatch(1);
 
     public DownloadWorker(DownloadTransfer transfer, DownloadListener listener, Runnable clean) {
         this.transfer = transfer;
@@ -29,7 +35,6 @@ public class DownloadWorker implements Runnable {
     @Override
     public void run() {
         File file = new File(transfer.path);
-
         try {
             this.thread = Thread.currentThread();
             this.connection = this.createConnection(this.transfer.url, this.transfer.headers);
@@ -41,14 +46,14 @@ public class DownloadWorker implements Runnable {
             }
 
             long bytesTotal = this.connection.getContentLengthLong();
-            if (bytesTotal <= 0) {
-                throw new IOException("HTTP Content-Length unavailable.");
+            if (bytesTotal < 0) {
+                bytesTotal = 0;
             }
             this.transfer.setStatus("working");
             this.transfer.setProgress(0, bytesTotal);
             this.listener.onBegin(this.transfer.id, bytesTotal);
 
-            createParentDirectory(file);
+            FileUtils.createParentDirectory(file);
 
             try (InputStream input = this.connection.getInputStream();
                  FileOutputStream output = new FileOutputStream(file)) {
@@ -71,24 +76,40 @@ public class DownloadWorker implements Runnable {
                 }
             }
 
+            this.isThreadSentTerminate = true;
             this.transfer.setStatus("done");
             this.transfer.setProgress(bytesTotal, bytesTotal);
             this.listener.onDone(this.transfer.id, bytesTotal, bytesTotal);
         } catch (Exception e) {
+            Log.i("RNTransfer", "catch");
+            this.isThreadSentTerminate = true;
             this.transfer.setStatus("fail");
             this.listener.onFail(this.transfer.id, e);
-            cleanFile(file);
+            FileUtils.cleanFile(file);
         } finally {
+            Log.i("RNTransfer", "finally");
             closeConnection(this.connection);
             clean.run();
+            this.threadWaiter.countDown();
         }
     }
 
     public void cancel() {
-        this.threadCancelled = true;
+        Log.i("RNTransfer", "cancel");
 
         if (this.thread != null) {
             this.thread.interrupt();
+        }
+
+        try {
+            boolean complete = this.threadWaiter.await(1, TimeUnit.SECONDS);
+            boolean terminate = this.isThreadSentTerminate;
+            if (!complete && !terminate) {
+                this.transfer.setStatus("fail");
+                this.listener.onFail(this.transfer.id, new InterruptedException());
+            }
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
         }
     }
 
@@ -115,19 +136,6 @@ public class DownloadWorker implements Runnable {
             } catch (Exception ignored) {
                 // ignore.
             }
-        }
-    }
-
-    private void createParentDirectory(File file) {
-        File parent = file.getParentFile();
-        if (parent != null && !parent.exists()) {
-            parent.mkdirs();
-        }
-    }
-
-    private void cleanFile(File file) {
-        if (file.exists()) {
-            file.delete();
         }
     }
 }

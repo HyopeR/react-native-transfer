@@ -11,8 +11,8 @@ import com.facebook.react.module.annotations.ReactModule;
 
 import com.hyoper.transfer.helpers.RNTransferConverter;
 import com.hyoper.transfer.helpers.RNTransferConverterGuard;
-import com.hyoper.transfer.helpers.RNTransferDirectories;
 import com.hyoper.transfer.helpers.RNTransferUtils;
+import com.hyoper.transfer.services.directory.Directory;
 import com.hyoper.transfer.services.downloader.DownloadTransfer;
 import com.hyoper.transfer.services.downloader.Downloader;
 import com.hyoper.transfer.services.downloader.models.DownloadTask;
@@ -56,7 +56,7 @@ public class RNTransfer extends NativeRNTransferSpec {
     @Override
     @NonNull
     public WritableMap getDirectories() {
-        return RNTransferDirectories.getDirectories(getReactApplicationContext());
+        return Directory.getDirectories(getReactApplicationContext());
     }
 
     @Override

@@ -1,6 +1,7 @@
 package com.hyoper.transfer.services.downloader;
 
 import android.content.Context;
+import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -75,8 +76,16 @@ public class Downloader {
     }
 
     public @Nullable DownloadTransfer removeDownload(String id) {
-        this.stopDownload(id);
-        return transfers.remove(id);
+        DownloadTransfer transfer = this.getDownload(id);
+
+        if (transfer != null) {
+            Log.i("RNTransfer", "remove 1");
+            this.queue.delete(id);
+            Log.i("RNTransfer", "remove 2");
+            return transfers.remove(id);
+        }
+
+        return null;
     }
 
     public @Nullable DownloadTransfer getDownload(String id) {
