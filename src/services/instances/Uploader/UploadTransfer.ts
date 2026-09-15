@@ -53,8 +53,8 @@ export class UploadTransfer implements UploadInternalNs.Transfer {
     RNTransferNative.stopUpload(this.id);
   }
 
-  remove() {
-    this.handlers.remove(this.id);
+  async remove() {
+    return this.handlers.remove(this.id);
   }
 
   apply(event: UploadNs.Event) {

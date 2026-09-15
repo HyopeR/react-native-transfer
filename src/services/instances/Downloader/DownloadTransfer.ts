@@ -53,8 +53,8 @@ export class DownloadTransfer implements DownloadInternalNs.Transfer {
     RNTransferNative.stopDownload(this.id);
   }
 
-  remove() {
-    this.handlers.remove(this.id);
+  async remove() {
+    return this.handlers.remove(this.id);
   }
 
   apply(event: DownloadNs.Event) {

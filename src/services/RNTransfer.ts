@@ -27,7 +27,7 @@ export class RNTransferModule {
   }
 
   createDownload(options: DownloadNs.Options): DownloadNs.Transfer {
-    return this.downloader.download(options);
+    return this.downloader.create(options);
   }
 
   getUploads(): UploadNs.Transfer[] {
@@ -35,11 +35,35 @@ export class RNTransferModule {
   }
 
   createUpload(options: UploadNs.Options): UploadNs.Transfer {
-    return this.uploader.upload(options);
+    return this.uploader.create(options);
   }
 }
 
 export const RNTransfer = new RNTransferModule();
+
+// const group = RNTransfer.createDownloadGroup({
+//   id: RNTransfer.uuid(),
+//   name: 'Something',
+// });
+//
+// group.addDownload({
+//   id: RNTransfer.uuid(),
+//   url: '.com/sample-1.png',
+//   path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
+// });
+//
+// group.addDownload({
+//   id: RNTransfer.uuid(),
+//   url: '.com/sample-2.png',
+//   path: RNTransfer.directories.app.concat(`/files/sample-2.png`),
+// });
+//
+// const transfers = RNTransfer.getDownloads();
+// const groupTransfers = group.getDownloads();
+//
+// group.start();
+// group.stop();
+// group.remove();
 
 // const transfer1 = RNTransfer.createDownload({
 //   id: RNTransfer.uuid(),

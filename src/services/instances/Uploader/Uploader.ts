@@ -18,13 +18,15 @@ export class Uploader {
 
   private sync = async () => {
     try {
-      const tasks = await RNTransferNative.getUploads();
+      const tasks = RNTransferNative.getUploads();
       for (const task of tasks) {
         this.createTransfer(task);
       }
     } catch (e) {
-      RNTransferNative.clearUploads();
-      this.transfers.clear();
+      RNTransferNative.clearUploads()
+        .then()
+        .catch()
+        .finally(() => this.transfers.clear());
     }
   };
 
@@ -39,14 +41,10 @@ export class Uploader {
     return [...this.transfers.values()];
   }
 
-  public upload(options: UploadNs.Options) {
-    const task = this.createTask(options);
+  public create(options: UploadNs.Options) {
+    const task = RNTransferNative.createUpload(options);
     return this.createTransfer(task);
   }
-
-  private createTask = (options: UploadNs.Options) => {
-    return RNTransferNative.createUpload(options);
-  };
 
   private createTransfer = (task: UploadNs.Task) => {
     const transfer = new UploadTransfer(task, this.transferHandlers);
@@ -54,16 +52,12 @@ export class Uploader {
     return transfer;
   };
 
-  private removeTask = (id: string) => {
-    return RNTransferNative.removeUpload(id);
+  private remove = async (id: string) => {
+    await RNTransferNative.removeUpload(id);
+    this.removeTransfer(id);
   };
 
   private removeTransfer = (id: string) => {
     return this.transfers.delete(id);
-  };
-
-  private remove = (id: string) => {
-    this.removeTask(id);
-    this.removeTransfer(id);
   };
 }

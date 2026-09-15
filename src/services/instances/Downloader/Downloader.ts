@@ -23,13 +23,17 @@ export class Downloader {
         this.createTransfer(task);
       }
     } catch (e) {
-      RNTransferNative.clearDownloads();
-      this.transfers.clear();
+      RNTransferNative.clearDownloads()
+        .then()
+        .catch()
+        .finally(() => this.transfers.clear());
     }
   };
 
   private syncEvent = (event: DownloadNs.Event) => {
     const transfer = this.transfers.get(event.id);
+    console.log('syncEvent Transfer', transfer?.id);
+    console.log('syncEven Event', event);
     if (transfer) {
       transfer.apply(event);
     }
@@ -39,14 +43,10 @@ export class Downloader {
     return [...this.transfers.values()];
   }
 
-  public download(options: DownloadNs.Options) {
-    const task = this.createTask(options);
+  public create(options: DownloadNs.Options) {
+    const task = RNTransferNative.createDownload(options);
     return this.createTransfer(task);
   }
-
-  private createTask = (options: DownloadNs.Options) => {
-    return RNTransferNative.createDownload(options);
-  };
 
   private createTransfer = (task: DownloadNs.Task) => {
     const transfer = new DownloadTransfer(task, this.transferHandlers);
@@ -54,16 +54,12 @@ export class Downloader {
     return transfer;
   };
 
-  private removeTask = (id: string) => {
-    return RNTransferNative.removeDownload(id);
+  private remove = async (id: string) => {
+    await RNTransferNative.removeDownload(id);
+    setTimeout(() => this.removeTransfer(id), 0);
   };
 
   private removeTransfer = (id: string) => {
     return this.transfers.delete(id);
-  };
-
-  private remove = (id: string) => {
-    this.removeTask(id);
-    this.removeTransfer(id);
   };
 }

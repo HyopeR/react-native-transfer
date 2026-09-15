@@ -55,7 +55,7 @@ export namespace UploadNs {
     on<T extends EventType>(type: T, listener: EventListener<T>): this;
     start(): void;
     stop(): void;
-    remove(): void;
+    remove(): Promise<void>;
   }
 }
 
@@ -69,6 +69,6 @@ export namespace UploadInternalNs {
   };
 
   export interface TransferHandlers {
-    remove: (id: string) => void;
+    remove: (id: string) => Promise<void>;
   }
 }

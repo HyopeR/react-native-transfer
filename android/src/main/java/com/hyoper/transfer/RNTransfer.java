@@ -1,8 +1,8 @@
 package com.hyoper.transfer;
 
 import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
 
+import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
@@ -66,9 +66,13 @@ public class RNTransfer extends NativeRNTransferSpec {
     }
 
     @Override
-    public boolean clearDownloads() {
-        downloader.clear();
-        return true;
+    public void clearDownloads(Promise promise) {
+        try {
+            downloader.clear();
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
     }
 
     @Override
@@ -84,32 +88,17 @@ public class RNTransfer extends NativeRNTransferSpec {
         }
     }
 
-    @Nullable
     @Override
-    public WritableMap removeDownload(String id) {
+    public void removeDownload(String id, Promise promise) {
         try {
             DownloadTransfer transfer = this.downloader.removeDownload(id);
             RNTransferConverterGuard.ensureMapFrom(transfer);
-            DownloadTask task = transfer.toTask();
-            return RNTransferConverter.mapFromDownloadTask(task);
+            WritableMap taskMap = RNTransferConverter.mapFromDownloadTask(transfer);
+            promise.resolve(taskMap);
         } catch (Exception e) {
-            return null;
+            promise.reject(e);
         }
     }
-
-    @Nullable
-    @Override
-    public WritableMap getDownload(String id) {
-        try {
-            DownloadTransfer transfer = this.downloader.getDownload(id);
-            RNTransferConverterGuard.ensureMapFrom(transfer);
-            DownloadTask task = transfer.toTask();
-            return RNTransferConverter.mapFromDownloadTask(task);
-        } catch (Exception e) {
-            return null;
-        }
-    }
-
 
     @Override
     public void startDownload(String id) {
@@ -126,47 +115,37 @@ public class RNTransfer extends NativeRNTransferSpec {
         return null;
     }
 
+
     @Override
-    public boolean clearUploads() {
-        return false;
+    public void clearUploads(Promise promise) {
+        try {
+            promise.resolve(true);
+        } catch (Exception e) {
+            promise.reject(e);
+        }
     }
 
     @Override
     public WritableMap createUpload(ReadableMap options) {
         try {
             RNTransferConverterGuard.ensureMapTo(options);
-            UploadTask taskRaw = RNTransferConverter.mapToUploadTask(options);
-            UploadTransfer transfer = this.uploader.create(taskRaw);
-            UploadTask task = transfer.toTask();
-            return RNTransferConverter.mapFromUploadTask(task);
+            UploadTask task = RNTransferConverter.mapToUploadTask(options);
+            UploadTransfer transfer = this.uploader.create(task);
+            return RNTransferConverter.mapFromUploadTask(transfer);
         } catch (Exception e) {
             return null;
         }
     }
 
-    @Nullable
     @Override
-    public WritableMap removeUpload(String id) {
+    public void removeUpload(String id, Promise promise) {
         try {
             UploadTransfer transfer = this.uploader.remove(id);
             RNTransferConverterGuard.ensureMapFrom(transfer);
-            UploadTask task = transfer.toTask();
-            return RNTransferConverter.mapFromUploadTask(task);
+            WritableMap taskMap = RNTransferConverter.mapFromUploadTask(transfer);
+            promise.resolve(taskMap);
         } catch (Exception e) {
-            return null;
-        }
-    }
-
-    @Nullable
-    @Override
-    public WritableMap getUpload(String id) {
-        try {
-            UploadTransfer transfer = this.uploader.get(id);
-            RNTransferConverterGuard.ensureMapFrom(transfer);
-            UploadTask task = transfer.toTask();
-            return RNTransferConverter.mapFromUploadTask(task);
-        } catch (Exception e) {
-            return null;
+            promise.reject(e);
         }
     }
 

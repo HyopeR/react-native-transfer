@@ -62,19 +62,19 @@ export interface Spec extends TurboModule {
   getDirectories(): Directories;
 
   getDownloads(): DownloadTask[];
-  clearDownloads(): boolean;
+  clearDownloads(): Promise<boolean>;
+
   createDownload(options: DownloadOptions): DownloadTask;
-  removeDownload(id: string): DownloadTask | undefined;
-  getDownload(id: string): DownloadTask | undefined;
+  removeDownload(id: string): Promise<DownloadTask | undefined>;
   startDownload(id: string): void;
   stopDownload(id: string): void;
   readonly onDownload: EventEmitter<DownloadEvent>;
 
   getUploads(): UploadTask[];
-  clearUploads(): boolean;
+  clearUploads(): Promise<boolean>;
+
   createUpload(options: UploadOptions): UploadTask;
-  removeUpload(id: string): UploadTask | undefined;
-  getUpload(id: string): UploadTask | undefined;
+  removeUpload(id: string): Promise<UploadTask | undefined>;
   startUpload(id: string): void;
   stopUpload(id: string): void;
   readonly onUpload: EventEmitter<UploadEvent>;

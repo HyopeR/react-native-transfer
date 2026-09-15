@@ -37,7 +37,7 @@ export const DownloadPage = ({back}: PageProps) => {
   const removeTransfer = (id: string) => {
     const transfer = transferMap[id];
     if (transfer) {
-      transfer.remove();
+      transfer.remove().then().catch();
       setTransferMap(prev => {
         const {[id]: _, ...rest} = prev;
         return rest;
