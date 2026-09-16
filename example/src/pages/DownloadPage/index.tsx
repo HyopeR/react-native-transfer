@@ -1,4 +1,4 @@
-import React, {useState} from 'react';
+import React, {useEffect, useState} from 'react';
 import {FlatList, Text, View} from 'react-native';
 import {RNTransfer, DownloadNs} from '@hyoper/rn-transfer';
 import {Button, Screen} from '../../components/commons';
@@ -10,6 +10,14 @@ export const DownloadPage = ({back}: PageProps) => {
   const [transferMap, setTransferMap] = useState<
     Record<string, DownloadNs.Transfer>
   >({});
+
+  useEffect(() => {
+    const transfers = RNTransfer.getDownloads();
+    const transfersToMap = transfers.reduce((previous, transfer) => {
+      return {...previous, [transfer.id]: transfer};
+    }, {});
+    setTransferMap(transfersToMap);
+  }, []);
 
   const createTransfer = (url: string) => {
     const id = RNTransfer.uuid();

@@ -143,6 +143,17 @@ export const TransferCard = ({
         </TouchableOpacity>
 
         <TouchableOpacity
+          disabled={status !== 'fail'}
+          style={{
+            ...styles.button,
+            backgroundColor: status === 'fail' ? 'blue' : 'gray',
+            opacity: status === 'fail' ? 1 : 0.5,
+          }}
+          onPress={onStart}>
+          <Text>Retry</Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity
           style={{...styles.button, backgroundColor: 'red'}}
           onPress={onRemove}>
           <Text>Remove</Text>
