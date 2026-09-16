@@ -1,7 +1,5 @@
 package com.hyoper.transfer.services.downloader;
 
-import android.util.Log;
-
 import androidx.annotation.Nullable;
 
 import com.hyoper.transfer.services.downloader.models.DownloadListener;
@@ -15,16 +13,15 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.TimeUnit;
 
 public class DownloadWorker implements Runnable {
     private final DownloadTransfer transfer;
     private final DownloadListener listener;
     private final Runnable clean;
     private HttpURLConnection connection;
-    private volatile boolean isThreadSentTerminate = false;
+    private volatile boolean isThreadCancel = false;
     private volatile Thread thread;
-    private final CountDownLatch threadWaiter = new CountDownLatch(1);
+    private final CountDownLatch threadWait = new CountDownLatch(1);
 
     public DownloadWorker(DownloadTransfer transfer, DownloadListener listener, Runnable clean) {
         this.transfer = transfer;
@@ -68,46 +65,41 @@ public class DownloadWorker implements Runnable {
                     output.write(data, 0, count);
 
                     long now = System.currentTimeMillis();
-                    if (now - lastEmitTime > 150) {
-                        lastEmitTime = now;
-                        this.transfer.setProgress(bytesDownload, bytesTotal);
-                        this.listener.onProgress(this.transfer.id, bytesDownload, bytesTotal);
+                    if (now - lastEmitTime > 250) {
+                        if (!this.isThreadCancel) {
+                            lastEmitTime = now;
+                            this.transfer.setProgress(bytesDownload, bytesTotal);
+                            this.listener.onProgress(this.transfer.id, bytesDownload, bytesTotal);
+                        }
                     }
                 }
             }
 
-            this.isThreadSentTerminate = true;
             this.transfer.setStatus("done");
             this.transfer.setProgress(bytesTotal, bytesTotal);
             this.listener.onDone(this.transfer.id, bytesTotal, bytesTotal);
         } catch (Exception e) {
-            Log.i("RNTransfer", "catch");
-            this.isThreadSentTerminate = true;
             this.transfer.setStatus("fail");
             this.listener.onFail(this.transfer.id, e);
             FileUtils.cleanFile(file);
         } finally {
-            Log.i("RNTransfer", "finally");
             closeConnection(this.connection);
             clean.run();
-            this.threadWaiter.countDown();
+            this.threadWait.countDown();
         }
     }
 
     public void cancel() {
-        Log.i("RNTransfer", "cancel");
+        this.isThreadCancel = true;
 
-        if (this.thread != null) {
-            this.thread.interrupt();
-        }
+        if (this.thread == null) return;
+
+        this.thread.interrupt();
+
+        closeConnection(this.connection);
 
         try {
-            boolean complete = this.threadWaiter.await(1, TimeUnit.SECONDS);
-            boolean terminate = this.isThreadSentTerminate;
-            if (!complete && !terminate) {
-                this.transfer.setStatus("fail");
-                this.listener.onFail(this.transfer.id, new InterruptedException());
-            }
+            this.threadWait.await();
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
         }

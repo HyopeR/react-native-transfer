@@ -11,13 +11,14 @@ import java.util.HashMap;
 import java.util.Map;
 
 public class Uploader {
+    public static final String NAME = "RNTransferUploader";
     private final Context context;
     private final MMKV storage;
     private final Map<String, UploadTransfer> transfers = new HashMap<>();
 
-    public Uploader(Context context, MMKV storage) {
+    public Uploader(Context context) {
         this.context = context.getApplicationContext();
-        this.storage = storage;
+        this.storage = MMKV.mmkvWithID(NAME);
     }
 
     public UploadTransfer create(UploadTask task) {

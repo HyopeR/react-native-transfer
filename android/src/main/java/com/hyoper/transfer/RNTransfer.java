@@ -32,16 +32,15 @@ public class RNTransfer extends NativeRNTransferSpec {
     public RNTransfer(ReactApplicationContext reactContext) {
         super(reactContext);
         MMKV.initialize(reactContext);
-        MMKV storage = MMKV.mmkvWithID(NAME);
-        downloader = new Downloader(reactContext, storage);
-        uploader = new Uploader(reactContext, storage);
+        downloader = new Downloader(reactContext);
+        uploader = new Uploader(reactContext);
         RNTransferUtils.setName(NAME);
         RNTransferUtils.setEmitters(this::emitOnDownload, this::emitOnUpload);
     }
 
     @Override
     public void invalidate() {
-        downloader.clear();
+        downloader.clearMemory();
         downloader = null;
         uploader = null;
         RNTransferUtils.reset();
@@ -61,42 +60,32 @@ public class RNTransfer extends NativeRNTransferSpec {
 
     @Override
     public WritableArray getDownloads() {
-        List<DownloadTransfer> transfers = downloader.get();
+        List<DownloadTransfer> transfers = downloader.getDownloads();
         return RNTransferConverter.mapFromDownloadTasks(transfers);
     }
 
     @Override
     public void clearDownloads(Promise promise) {
-        try {
-            downloader.clear();
-            promise.resolve(true);
-        } catch (Exception e) {
-            promise.reject(e);
-        }
+        downloader.clear();
+        promise.resolve(true);
     }
 
     @Override
     public WritableMap createDownload(ReadableMap options) {
-        try {
-            RNTransferConverterGuard.ensureMapTo(options);
-            DownloadTask taskRaw = RNTransferConverter.mapToDownloadTask(options);
-            DownloadTransfer transfer = this.downloader.createDownload(taskRaw);
-            DownloadTask task = transfer.toTask();
-            return RNTransferConverter.mapFromDownloadTask(task);
-        } catch (Exception e) {
-            return null;
-        }
+        RNTransferConverterGuard.ensureMapTo(options);
+        DownloadTask taskRaw = RNTransferConverter.mapToDownloadTask(options);
+        DownloadTransfer transfer = this.downloader.createDownload(taskRaw);
+        return RNTransferConverter.mapFromDownloadTask(transfer);
     }
 
     @Override
     public void removeDownload(String id, Promise promise) {
-        try {
-            DownloadTransfer transfer = this.downloader.removeDownload(id);
-            RNTransferConverterGuard.ensureMapFrom(transfer);
+        DownloadTransfer transfer = this.downloader.removeDownload(id);
+        if (transfer != null) {
             WritableMap taskMap = RNTransferConverter.mapFromDownloadTask(transfer);
             promise.resolve(taskMap);
-        } catch (Exception e) {
-            promise.reject(e);
+        } else {
+            promise.resolve(null);
         }
     }
 
@@ -115,37 +104,27 @@ public class RNTransfer extends NativeRNTransferSpec {
         return null;
     }
 
-
     @Override
     public void clearUploads(Promise promise) {
-        try {
-            promise.resolve(true);
-        } catch (Exception e) {
-            promise.reject(e);
-        }
+        promise.resolve(true);
     }
 
     @Override
     public WritableMap createUpload(ReadableMap options) {
-        try {
-            RNTransferConverterGuard.ensureMapTo(options);
-            UploadTask task = RNTransferConverter.mapToUploadTask(options);
-            UploadTransfer transfer = this.uploader.create(task);
-            return RNTransferConverter.mapFromUploadTask(transfer);
-        } catch (Exception e) {
-            return null;
-        }
+        RNTransferConverterGuard.ensureMapTo(options);
+        UploadTask task = RNTransferConverter.mapToUploadTask(options);
+        UploadTransfer transfer = this.uploader.create(task);
+        return RNTransferConverter.mapFromUploadTask(transfer);
     }
 
     @Override
     public void removeUpload(String id, Promise promise) {
-        try {
-            UploadTransfer transfer = this.uploader.remove(id);
-            RNTransferConverterGuard.ensureMapFrom(transfer);
+        UploadTransfer transfer = this.uploader.remove(id);
+        if (transfer != null) {
             WritableMap taskMap = RNTransferConverter.mapFromUploadTask(transfer);
             promise.resolve(taskMap);
-        } catch (Exception e) {
-            promise.reject(e);
+        } else {
+            promise.resolve(null);
         }
     }
 

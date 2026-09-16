@@ -1,7 +1,6 @@
 package com.hyoper.transfer.services.downloader;
 
 import android.content.Context;
-import android.util.Log;
 
 import androidx.annotation.Nullable;
 
@@ -18,10 +17,11 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 public class Downloader {
+    public static final String NAME = "RNTransferDownloader";
     private final Context context;
     private final MMKV storage;
     private final Map<String, DownloadTransfer> transfers = new ConcurrentHashMap<>();
-    private final DownloaderQueue queue;
+    private final DownloadQueue queue = new DownloadQueue();
     private final DownloadListener queueListener = new DownloadListener() {
         @Override
         public void onBegin(String id, long bytesExpect) {
@@ -63,10 +63,17 @@ public class Downloader {
         }
     };
 
-    public Downloader(Context context, MMKV storage) {
+    public Downloader(Context context) {
         this.context = context.getApplicationContext();
-        this.storage = storage;
-        this.queue = new DownloaderQueue();
+        this.storage = MMKV.mmkvWithID(NAME);
+    }
+
+    public List<DownloadTransfer> getDownloads() {
+        return new ArrayList<>(transfers.values());
+    }
+
+    public @Nullable DownloadTransfer getDownload(String id) {
+        return transfers.get(id);
     }
 
     public DownloadTransfer createDownload(DownloadTask task) {
@@ -78,18 +85,10 @@ public class Downloader {
     public @Nullable DownloadTransfer removeDownload(String id) {
         DownloadTransfer transfer = this.getDownload(id);
 
-        if (transfer != null) {
-            Log.i("RNTransfer", "remove 1");
-            this.queue.delete(id);
-            Log.i("RNTransfer", "remove 2");
-            return transfers.remove(id);
-        }
+        if (transfer == null) return null;
 
-        return null;
-    }
-
-    public @Nullable DownloadTransfer getDownload(String id) {
-        return transfers.get(id);
+        this.queue.delete(id);
+        return transfers.remove(id);
     }
 
     public void startDownload(String id) {
@@ -108,12 +107,14 @@ public class Downloader {
         }
     }
 
-    public List<DownloadTransfer> get() {
-        return new ArrayList<>(transfers.values());
+    public void clearMemory() {
+        this.queue.clear();
+        this.transfers.clear();
     }
 
     public void clear() {
         this.queue.clear();
         this.transfers.clear();
+        this.storage.clearAll();
     }
 }
