@@ -32,8 +32,6 @@ export class Downloader {
 
   private syncEvent = (event: DownloadNs.Event) => {
     const transfer = this.transfers.get(event.id);
-    console.log('syncEvent Transfer', transfer?.id);
-    console.log('syncEven Event', event);
     if (transfer) {
       transfer.apply(event);
     }
@@ -56,7 +54,7 @@ export class Downloader {
 
   private remove = async (id: string) => {
     await RNTransferNative.removeDownload(id);
-    setTimeout(() => this.removeTransfer(id), 0);
+    this.removeTransfer(id);
   };
 
   private removeTransfer = (id: string) => {
