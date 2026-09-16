@@ -7,13 +7,11 @@ import androidx.annotation.Nullable;
 import com.facebook.react.bridge.Arguments;
 import com.facebook.react.bridge.WritableMap;
 import com.google.gson.Gson;
-import com.google.gson.reflect.TypeToken;
 import com.hyoper.transfer.helpers.RNTransferUtils;
 import com.hyoper.transfer.services.downloader.models.DownloadListener;
 import com.hyoper.transfer.services.downloader.models.DownloadTask;
 import com.tencent.mmkv.MMKV;
 
-import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -21,7 +19,6 @@ import java.util.concurrent.ConcurrentHashMap;
 
 public class Downloader {
     public static final String NAME = "RNTransferDownloader";
-    private static final String STORAGE_KEY = "List";
     private final Context context;
     private final MMKV storage;
     private final Gson gson = new Gson();
@@ -30,6 +27,11 @@ public class Downloader {
     private final DownloadListener queueListener = new DownloadListener() {
         @Override
         public void onBegin(String id, long bytesExpect) {
+            DownloadTransfer transfer = getDownload(id);
+            if (transfer != null) {
+                saveTransfer(transfer);
+            }
+
             WritableMap map = Arguments.createMap();
             map.putString("type", "begin");
             map.putString("id", id);
@@ -49,6 +51,11 @@ public class Downloader {
 
         @Override
         public void onDone(String id, long bytesDownload, long bytesTotal) {
+            DownloadTransfer transfer = getDownload(id);
+            if (transfer != null) {
+                saveTransfer(transfer);
+            }
+
             WritableMap map = Arguments.createMap();
             map.putString("type", "done");
             map.putString("id", id);
@@ -59,6 +66,11 @@ public class Downloader {
 
         @Override
         public void onFail(String id, Exception error) {
+            DownloadTransfer transfer = getDownload(id);
+            if (transfer != null) {
+                saveTransfer(transfer);
+            }
+
             WritableMap map = Arguments.createMap();
             map.putString("type", "fail");
             map.putString("id", id);
@@ -94,7 +106,7 @@ public class Downloader {
             throw new IllegalArgumentException("Download ID duplication.");
         }
 
-        saveTransfers();
+        saveTransfer(transfer);
         return transfer;
     }
 
@@ -105,7 +117,7 @@ public class Downloader {
 
         this.queue.delete(id);
         this.transfers.remove(id);
-        saveTransfers();
+        removeTransfer(id);
 
         return transfer;
     }
@@ -137,28 +149,27 @@ public class Downloader {
         this.storage.clearAll();
     }
 
-    private synchronized void saveTransfers() {
-        List<DownloadTask> tasks = new ArrayList<>();
-        for (DownloadTransfer transfer : this.transfers.values()) {
-            tasks.add(transfer.toTask());
-        }
-        String json = this.gson.toJson(tasks);
-        this.storage.encode(STORAGE_KEY, json);
+    private void saveTransfer(DownloadTransfer transfer) {
+        String json = this.gson.toJson(transfer.toTask());
+        this.storage.encode(transfer.id, json);
+    }
+
+    private void removeTransfer(String id) {
+        this.storage.removeValueForKey(id);
     }
 
     private void loadTransfers() {
-        String json = this.storage.decodeString(STORAGE_KEY);
-        if (json != null && !json.isEmpty()) {
-            Type type = new TypeToken<List<DownloadTask>>() {}.getType();
-            List<DownloadTask> tasks = this.gson.fromJson(json, type);
+        String[] keys = this.storage.allKeys();
+        if (keys == null) return;
 
-            if (tasks != null) {
-                for (DownloadTask task : tasks) {
-                    if (task.id != null) {
-                        DownloadTransfer transfer = new DownloadTransfer(task);
-                        this.transfers.put(transfer.id, transfer);
-                    }
-                }
+        for (String key : keys) {
+            String json = this.storage.decodeString(key);
+            if (json == null || json.isEmpty()) continue;
+
+            DownloadTask task = this.gson.fromJson(json, DownloadTask.class);
+            if (task != null) {
+                DownloadTransfer transfer = new DownloadTransfer(task);
+                this.transfers.put(transfer.id, transfer);
             }
         }
     }
