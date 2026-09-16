@@ -63,6 +63,7 @@ export interface Spec extends TurboModule {
 
   getDownloads(): DownloadTask[];
   clearDownloads(): Promise<void>;
+  getDownload(id: string): DownloadTask | null;
   createDownload(options: DownloadOptions): DownloadTask;
   removeDownload(id: string): Promise<DownloadTask | null>;
   startDownload(id: string): void;
@@ -71,6 +72,7 @@ export interface Spec extends TurboModule {
 
   getUploads(): UploadTask[];
   clearUploads(): Promise<void>;
+  getUpload(id: string): UploadTask | null;
   createUpload(options: UploadOptions): UploadTask;
   removeUpload(id: string): Promise<UploadTask | null>;
   startUpload(id: string): void;

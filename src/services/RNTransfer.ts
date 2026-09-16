@@ -4,6 +4,8 @@ import {Uploader} from './instances/Uploader';
 import {DownloadNs, UploadNs} from '../types';
 
 export class RNTransferModule {
+  private _ready = false;
+
   private readonly helper: Helper;
   private readonly downloader: Downloader;
   private readonly uploader: Uploader;
@@ -12,6 +14,20 @@ export class RNTransferModule {
     this.helper = new Helper();
     this.downloader = new Downloader();
     this.uploader = new Uploader();
+    this.init();
+  }
+
+  private async init() {
+    try {
+      await Promise.all([this.downloader.init(), this.uploader.init()]);
+      this._ready = true;
+    } catch (e) {
+      this._ready = true;
+    }
+  }
+
+  get ready() {
+    return this._ready;
   }
 
   get directories() {
@@ -26,12 +42,20 @@ export class RNTransferModule {
     return this.downloader.get();
   }
 
+  getDownload(id: string): DownloadNs.Transfer | undefined {
+    return this.downloader.getOne(id);
+  }
+
   createDownload(options: DownloadNs.Options): DownloadNs.Transfer {
     return this.downloader.create(options);
   }
 
   getUploads(): UploadNs.Transfer[] {
     return this.uploader.get();
+  }
+
+  getUpload(id: string): UploadNs.Transfer | undefined {
+    return this.uploader.getOne(id);
   }
 
   createUpload(options: UploadNs.Options): UploadNs.Transfer {

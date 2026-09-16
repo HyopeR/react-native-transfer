@@ -15,4 +15,8 @@ public class FileUtils {
             file.delete();
         }
     }
+
+    public static boolean checkFile(File file) {
+        return file.exists() && file.isFile();
+    }
 }

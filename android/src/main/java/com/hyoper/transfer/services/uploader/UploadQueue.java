@@ -1,6 +1,6 @@
-package com.hyoper.transfer.services.downloader;
+package com.hyoper.transfer.services.uploader;
 
-import com.hyoper.transfer.services.downloader.models.DownloadListener;
+import com.hyoper.transfer.services.uploader.models.UploadListener;
 
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
@@ -9,26 +9,26 @@ import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ThreadPoolExecutor;
 import java.util.concurrent.TimeUnit;
 
-public class DownloadQueue {
-    private static final int CONCURRENT = 3;
+public class UploadQueue {
+    private static final int CONCURRENT = 1;
     private final BlockingQueue<Runnable> queue;
     private final ThreadPoolExecutor executor;
-    private final Map<String, DownloadWorker> workers = new ConcurrentHashMap<>();
+    private final Map<String, UploadWorker> workers = new ConcurrentHashMap<>();
 
-    public DownloadQueue() {
+    public UploadQueue() {
         queue = new LinkedBlockingQueue<>();
         executor = new ThreadPoolExecutor(CONCURRENT, CONCURRENT, 60L, TimeUnit.SECONDS, queue);
         executor.allowCoreThreadTimeOut(true);
     }
 
-    public void add(DownloadTransfer transfer, DownloadListener listener) {
-        DownloadWorker worker = new DownloadWorker(transfer, listener, () -> workers.remove(transfer.id));
+    public void add(UploadTransfer transfer, UploadListener listener) {
+        UploadWorker worker = new UploadWorker(transfer, listener, () -> workers.remove(transfer.id));
         workers.put(transfer.id, worker);
         executor.execute(worker);
     }
 
     public void delete(String id) {
-        DownloadWorker worker = workers.get(id);
+        UploadWorker worker = workers.get(id);
         if (worker != null) {
             worker.cancel();
             workers.remove(id);
@@ -37,7 +37,7 @@ public class DownloadQueue {
     }
 
     public void clear() {
-        for (DownloadWorker worker : workers.values()) {
+        for (UploadWorker worker : workers.values()) {
             worker.cancel();
         }
         workers.clear();

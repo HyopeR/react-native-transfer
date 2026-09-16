@@ -10,7 +10,7 @@ import com.facebook.react.bridge.WritableMap;
 import com.facebook.react.module.annotations.ReactModule;
 
 import com.hyoper.transfer.helpers.RNTransferConverter;
-import com.hyoper.transfer.helpers.RNTransferConverterGuard;
+import com.hyoper.transfer.helpers.RNTransferControl;
 import com.hyoper.transfer.helpers.RNTransferUtils;
 import com.hyoper.transfer.services.directory.Directory;
 import com.hyoper.transfer.services.downloader.DownloadTransfer;
@@ -41,6 +41,7 @@ public class RNTransfer extends NativeRNTransferSpec {
     @Override
     public void invalidate() {
         downloader.clearMemory();
+        uploader.clearMemory();
         downloader = null;
         uploader = null;
         RNTransferUtils.reset();
@@ -71,10 +72,20 @@ public class RNTransfer extends NativeRNTransferSpec {
     }
 
     @Override
+    public WritableMap getDownload(String id) {
+        DownloadTransfer transfer = this.downloader.getDownload(id);
+        if (transfer != null) {
+            return RNTransferConverter.mapFromDownloadTask(transfer);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public WritableMap createDownload(ReadableMap options) {
-        RNTransferConverterGuard.ensureMapTo(options);
-        DownloadTask taskRaw = RNTransferConverter.mapToDownloadTask(options);
-        DownloadTransfer transfer = this.downloader.createDownload(taskRaw);
+        RNTransferControl.ensureOptions(options);
+        DownloadTask task = RNTransferConverter.mapToDownloadTask(options);
+        DownloadTransfer transfer = this.downloader.createDownload(task);
         return RNTransferConverter.mapFromDownloadTask(transfer);
     }
 
@@ -101,25 +112,37 @@ public class RNTransfer extends NativeRNTransferSpec {
 
     @Override
     public WritableArray getUploads() {
-        return null;
+        List<UploadTransfer> transfers = uploader.getUploads();
+        return RNTransferConverter.mapFromUploadTasks(transfers);
     }
 
     @Override
     public void clearUploads(Promise promise) {
+        uploader.clear();
         promise.resolve(true);
     }
 
     @Override
+    public WritableMap getUpload(String id) {
+        UploadTransfer transfer = this.uploader.getUpload(id);
+        if (transfer != null) {
+            return RNTransferConverter.mapFromUploadTask(transfer);
+        } else {
+            return null;
+        }
+    }
+
+    @Override
     public WritableMap createUpload(ReadableMap options) {
-        RNTransferConverterGuard.ensureMapTo(options);
+        RNTransferControl.ensureOptions(options);
         UploadTask task = RNTransferConverter.mapToUploadTask(options);
-        UploadTransfer transfer = this.uploader.create(task);
+        UploadTransfer transfer = this.uploader.createUpload(task);
         return RNTransferConverter.mapFromUploadTask(transfer);
     }
 
     @Override
     public void removeUpload(String id, Promise promise) {
-        UploadTransfer transfer = this.uploader.remove(id);
+        UploadTransfer transfer = this.uploader.removeUpload(id);
         if (transfer != null) {
             WritableMap taskMap = RNTransferConverter.mapFromUploadTask(transfer);
             promise.resolve(taskMap);
@@ -130,11 +153,11 @@ public class RNTransfer extends NativeRNTransferSpec {
 
     @Override
     public void startUpload(String id) {
-
+        this.uploader.startUpload(id);
     }
 
     @Override
     public void stopUpload(String id) {
-
+        this.uploader.stopUpload(id);
     }
 }

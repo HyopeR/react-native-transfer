@@ -12,25 +12,22 @@ export class Uploader {
   constructor() {
     this.transfers = new Map<string, UploadInternalNs.Transfer>();
     this.transferHandlers = {remove: this.remove};
-    this.subscription = RNTransferNative.onUpload(this.syncEvent);
-    this.sync();
+    this.subscription = RNTransferNative.onUpload(this.listener);
   }
 
-  private sync = async () => {
+  public init = async () => {
     try {
       const tasks = RNTransferNative.getUploads();
       for (const task of tasks) {
         this.createTransfer(task);
       }
     } catch (e) {
-      RNTransferNative.clearUploads()
-        .then()
-        .catch()
-        .finally(() => this.transfers.clear());
+      await RNTransferNative.clearUploads();
+      this.transfers.clear();
     }
   };
 
-  private syncEvent = (event: UploadNs.Event) => {
+  private listener = (event: UploadNs.Event) => {
     const transfer = this.transfers.get(event.id);
     if (transfer) {
       transfer.apply(event);
@@ -39,6 +36,26 @@ export class Uploader {
 
   public get() {
     return [...this.transfers.values()];
+  }
+
+  public getOne(id: string) {
+    const task = RNTransferNative.getUpload(id);
+    const transfer = this.transfers.get(id);
+
+    if (task && transfer) {
+      return transfer;
+    }
+
+    if (task && !transfer) {
+      return this.createTransfer(task);
+    }
+
+    if (!task && transfer) {
+      this.transfers.delete(id);
+      return undefined;
+    }
+
+    return undefined;
   }
 
   public create(options: UploadNs.Options) {

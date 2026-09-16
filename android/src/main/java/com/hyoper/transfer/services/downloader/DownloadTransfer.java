@@ -3,6 +3,7 @@ package com.hyoper.transfer.services.downloader;
 import com.hyoper.transfer.services.downloader.models.DownloadProgress;
 import com.hyoper.transfer.services.downloader.models.DownloadStatus;
 import com.hyoper.transfer.services.downloader.models.DownloadTask;
+
 public class DownloadTransfer extends DownloadTask {
     public DownloadTransfer(DownloadTask task) {
         super(task.id, task.url, task.path, task.headers, task.metadata, task.status, task.progress);
