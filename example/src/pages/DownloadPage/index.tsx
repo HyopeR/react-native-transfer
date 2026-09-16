@@ -22,22 +22,22 @@ export const DownloadPage = ({back}: PageProps) => {
       .on('progress', event => {
         console.log(event);
       })
-      .on('done', event => {
+      .on('done', async event => {
         console.log(event);
-        transfer.remove();
+        await transfer.remove();
       })
-      .on('fail', event => {
+      .on('fail', async event => {
         console.log(event);
-        transfer.remove();
+        await transfer.remove();
       });
 
     setTransferMap(prev => ({...prev, [id]: transfer}));
   };
 
-  const removeTransfer = (id: string) => {
+  const removeTransfer = async (id: string) => {
     const transfer = transferMap[id];
     if (transfer) {
-      transfer.remove().then().catch();
+      await transfer.remove();
       setTransferMap(prev => {
         const {[id]: _, ...rest} = prev;
         return rest;
@@ -53,29 +53,31 @@ export const DownloadPage = ({back}: PageProps) => {
 
       <Screen.Content style={PageStyle.root}>
         <View style={PageStyle.body}>
-          <Text style={PageStyle.description}>Description here.</Text>
+          <View>
+            <Text style={PageStyle.description}>Description here.</Text>
+          </View>
 
           <View style={{flexDirection: 'row', columnGap: 8}}>
             <Button
               style={{flex: 1}}
               title={'1mb'}
-              onPress={() =>
-                createTransfer('https://proof.ovh.net/files/1Mb.dat')
-              }
+              onPress={() => {
+                createTransfer('https://proof.ovh.net/files/1Mb.dat');
+              }}
             />
             <Button
               style={{flex: 1}}
               title={'10mb'}
-              onPress={() =>
-                createTransfer('https://proof.ovh.net/files/10Mb.dat')
-              }
+              onPress={() => {
+                createTransfer('https://proof.ovh.net/files/10Mb.dat');
+              }}
             />
             <Button
               style={{flex: 1}}
               title={'100mb'}
-              onPress={() =>
-                createTransfer('https://proof.ovh.net/files/100Mb.dat')
-              }
+              onPress={() => {
+                createTransfer('https://proof.ovh.net/files/100Mb.dat');
+              }}
             />
           </View>
 

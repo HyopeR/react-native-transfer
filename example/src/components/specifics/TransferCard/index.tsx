@@ -62,56 +62,68 @@ export const TransferCard = ({
 
   return (
     <View style={styles.card}>
-      <View style={styles.cardRow}>
-        <View style={{...styles.cardColumn, flex: 0}}>
-          <Text>ID:</Text>
+      <View style={styles.row}>
+        <View style={styles.columnLeft}>
+          <Text style={styles.textLabel}>ID:</Text>
         </View>
-        <View style={styles.cardColumn}>
+        <View style={styles.columnRight}>
           <Text>{transfer.id}</Text>
         </View>
       </View>
 
-      <View style={styles.cardRow}>
-        <View style={{...styles.cardColumn, flex: 0}}>
-          <Text>URL:</Text>
+      <View style={styles.row}>
+        <View style={styles.columnLeft}>
+          <Text style={styles.textLabel}>URL:</Text>
         </View>
-        <View style={styles.cardColumn}>
-          <Text>{transfer.url}</Text>
-        </View>
-      </View>
-
-      <View style={styles.cardRow}>
-        <View style={{...styles.cardColumn, flex: 0}}>
-          <Text>PATH:</Text>
-        </View>
-        <View style={styles.cardColumn}>
-          <Text>{transfer.path}</Text>
+        <View style={styles.columnRight}>
+          <Text
+            style={styles.textSmall}
+            numberOfLines={2}
+            ellipsizeMode={'tail'}>
+            {transfer.url}
+          </Text>
         </View>
       </View>
 
-      <View style={styles.cardRow}>
-        <View style={{...styles.cardColumn, flex: 0}}>
-          <Text>STATUS:</Text>
+      <View style={styles.row}>
+        <View style={styles.columnLeft}>
+          <Text style={styles.textLabel}>PATH:</Text>
         </View>
-        <View style={styles.cardColumn}>
+        <View style={styles.columnRight}>
+          <Text
+            style={styles.textSmall}
+            numberOfLines={2}
+            ellipsizeMode={'tail'}>
+            {transfer.path}
+            {transfer.path}
+            {transfer.path}
+          </Text>
+        </View>
+      </View>
+
+      <View style={styles.row}>
+        <View style={styles.columnLeft}>
+          <Text style={styles.textLabel}>STATUS:</Text>
+        </View>
+        <View style={styles.columnRight}>
           <Text>{status}</Text>
         </View>
       </View>
 
-      <View style={styles.cardRow}>
-        <View style={{...styles.cardColumn, flex: 0}}>
-          <Text>PROGRESS:</Text>
+      <View style={styles.row}>
+        <View style={styles.columnLeft}>
+          <Text style={styles.textLabel}>PROGRESS:</Text>
         </View>
-        <View style={styles.cardColumn}>
+        <View style={styles.columnRight}>
           <Text>{percentage}</Text>
         </View>
       </View>
 
-      <View style={styles.cardRow}>
+      <View style={styles.row}>
         <TouchableOpacity
           disabled={status !== 'idle'}
           style={{
-            ...styles.cardButton,
+            ...styles.button,
             backgroundColor: status === 'idle' ? 'green' : 'gray',
             opacity: status === 'idle' ? 1 : 0.5,
           }}
@@ -122,7 +134,7 @@ export const TransferCard = ({
         <TouchableOpacity
           disabled={status !== 'working'}
           style={{
-            ...styles.cardButton,
+            ...styles.button,
             backgroundColor: status === 'working' ? 'orange' : 'gray',
             opacity: status === 'working' ? 1 : 0.5,
           }}
@@ -131,7 +143,7 @@ export const TransferCard = ({
         </TouchableOpacity>
 
         <TouchableOpacity
-          style={{...styles.cardButton, backgroundColor: 'red'}}
+          style={{...styles.button, backgroundColor: 'red'}}
           onPress={onRemove}>
           <Text>Remove</Text>
         </TouchableOpacity>
@@ -142,22 +154,34 @@ export const TransferCard = ({
 
 const styles = StyleSheet.create({
   card: {
-    height: 216,
-    backgroundColor: '#EEE',
+    height: 232,
+    backgroundColor: '#DDD',
+    padding: 8,
   },
-  cardRow: {
+  row: {
     height: 36,
     flexDirection: 'row',
     columnGap: 8,
   },
-  cardColumn: {
+  columnLeft: {
+    width: 80,
+    flexDirection: 'column',
+    justifyContent: 'center',
+  },
+  columnRight: {
     flex: 1,
     flexDirection: 'column',
     justifyContent: 'center',
   },
-  cardButton: {
+  button: {
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  textLabel: {
+    fontWeight: '700',
+  },
+  textSmall: {
+    fontSize: 11,
   },
 });

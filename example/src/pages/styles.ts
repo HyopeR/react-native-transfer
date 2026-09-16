@@ -9,6 +9,7 @@ export const PageStyle = StyleSheet.create({
   body: {
     flex: 1,
     marginBottom: 16,
+    rowGap: 8,
   },
   description: {
     fontSize: 16,
