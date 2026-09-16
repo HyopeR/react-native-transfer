@@ -23,7 +23,12 @@ export const PageStyle = StyleSheet.create({
     lineHeight: 20,
     marginVertical: 4,
   },
+  buttons: {
+    flexDirection: 'row',
+    columnGap: 8,
+  },
   button: {
-    marginBottom: 8,
+    flex: 1,
+    borderRadius: 8,
   },
 });

@@ -7,6 +7,12 @@ import {PageStyle} from '../styles';
 import {PageProps} from '../types';
 
 export const DownloadPage = ({back}: PageProps) => {
+  const [urls] = useState<{name: string; url: string}[]>([
+    {name: '1mb', url: 'https://proof.ovh.net/files/1Mb.dat'},
+    {name: '10mb', url: 'https://proof.ovh.net/files/10Mb.dat'},
+    {name: '100mb', url: 'https://proof.ovh.net/files/100Mb.dat'},
+  ]);
+
   const [transferMap, setTransferMap] = useState<
     Record<string, DownloadNs.Transfer>
   >({});
@@ -30,15 +36,12 @@ export const DownloadPage = ({back}: PageProps) => {
       .on('progress', event => {
         console.log(event);
       })
-      .on('done', async event => {
+      .on('done', event => {
         console.log(event);
-        await transfer.remove();
       })
-      .on('fail', async event => {
+      .on('fail', event => {
         console.log(event);
-        await transfer.remove();
       });
-
     setTransferMap(prev => ({...prev, [id]: transfer}));
   };
 
@@ -62,31 +65,23 @@ export const DownloadPage = ({back}: PageProps) => {
       <Screen.Content style={PageStyle.root}>
         <View style={PageStyle.body}>
           <View>
-            <Text style={PageStyle.description}>Description here.</Text>
+            <Text style={PageStyle.description}>
+              In this example, you can see how downloads are managed. Use the
+              buttons to control it.
+            </Text>
           </View>
 
-          <View style={{flexDirection: 'row', columnGap: 8}}>
-            <Button
-              style={{flex: 1}}
-              title={'1mb'}
-              onPress={() => {
-                createTransfer('https://proof.ovh.net/files/1Mb.dat');
-              }}
-            />
-            <Button
-              style={{flex: 1}}
-              title={'10mb'}
-              onPress={() => {
-                createTransfer('https://proof.ovh.net/files/10Mb.dat');
-              }}
-            />
-            <Button
-              style={{flex: 1}}
-              title={'100mb'}
-              onPress={() => {
-                createTransfer('https://proof.ovh.net/files/100Mb.dat');
-              }}
-            />
+          <View style={PageStyle.buttons}>
+            {urls.map(({name, url}) => {
+              return (
+                <Button
+                  key={name}
+                  title={name}
+                  style={PageStyle.button}
+                  onPress={() => createTransfer(url)}
+                />
+              );
+            })}
           </View>
 
           <FlatList

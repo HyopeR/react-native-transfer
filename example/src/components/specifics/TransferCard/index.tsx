@@ -168,6 +168,7 @@ const styles = StyleSheet.create({
     height: 232,
     backgroundColor: '#DDD',
     padding: 8,
+    borderRadius: 8,
   },
   row: {
     height: 36,
@@ -188,6 +189,7 @@ const styles = StyleSheet.create({
     flex: 1,
     alignItems: 'center',
     justifyContent: 'center',
+    borderRadius: 4,
   },
   textLabel: {
     fontWeight: '700',
