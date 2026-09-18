@@ -65,6 +65,26 @@ export class RNTransferModule {
 
 export const RNTransfer = new RNTransferModule();
 
+// const transfer = RNTransfer.createDownload({
+//   id: RNTransfer.uuid(),
+//   url: '.com/sample-1.png',
+//   path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
+// });
+//
+// const subscription = transfer.subscribe({
+//   begin: () => {},
+//   progress: () => {},
+//   done: () => {},
+//   fail: () => {},
+// });
+//
+// subscription.id;
+// subscription.unsubscribe();
+//
+// transfer.start();
+// transfer.stop();
+// transfer.remove();
+
 // const group = RNTransfer.createDownloadGroup({
 //   id: RNTransfer.uuid(),
 //   name: 'Something',
