@@ -1,16 +1,22 @@
-import {EventSubscription} from 'react-native';
-import RNTransferNative from '../../../specs/NativeRNTransfer';
-import {UploadTransfer} from './UploadTransfer';
-import {UploadNs, UploadInternalNs} from '../../../types';
+import RNTransferNative from '../../specs/NativeRNTransfer';
+import {Transfer} from './Transfer';
+import {
+  UploadTransferInternal,
+  UploadTransferInternalHandlers,
+  UploaderSubscription,
+  UploadEvent,
+  UploadOptions,
+  UploadTask,
+} from '../../types';
 
 export class Uploader {
-  private readonly transfers: Map<string, UploadInternalNs.Transfer>;
-  private readonly transferHandlers: UploadInternalNs.TransferHandlers;
+  private readonly transfers: Map<string, UploadTransferInternal>;
+  private readonly transferHandlers: UploadTransferInternalHandlers;
 
-  private readonly subscription: EventSubscription;
+  private readonly subscription: UploaderSubscription;
 
   constructor() {
-    this.transfers = new Map<string, UploadInternalNs.Transfer>();
+    this.transfers = new Map();
     this.transferHandlers = {remove: this.remove};
     this.subscription = RNTransferNative.onUpload(this.listener);
   }
@@ -27,7 +33,7 @@ export class Uploader {
     }
   };
 
-  private listener = (event: UploadNs.Event) => {
+  private listener = (event: UploadEvent) => {
     const transfer = this.transfers.get(event.id);
     if (transfer) {
       transfer.apply(event);
@@ -58,13 +64,13 @@ export class Uploader {
     return undefined;
   }
 
-  public create(options: UploadNs.Options) {
+  public create(options: UploadOptions) {
     const task = RNTransferNative.createUpload(options);
     return this.createTransfer(task);
   }
 
-  private createTransfer = (task: UploadNs.Task) => {
-    const transfer = new UploadTransfer(task, this.transferHandlers);
+  private createTransfer = (task: UploadTask) => {
+    const transfer = new Transfer(task, this.transferHandlers);
     this.transfers.set(transfer.id, transfer);
     return transfer;
   };

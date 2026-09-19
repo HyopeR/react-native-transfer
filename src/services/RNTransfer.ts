@@ -1,7 +1,12 @@
-import {Helper} from './instances/Helper';
-import {Downloader} from './instances/Downloader';
-import {Uploader} from './instances/Uploader';
-import {DownloadNs, UploadNs} from '../types';
+import {Helper} from './Helper';
+import {Downloader} from './Downloader';
+import {Uploader} from './Uploader';
+import {
+  DownloadOptions,
+  DownloadTransfer,
+  UploadOptions,
+  UploadTransfer,
+} from '../types';
 
 export class RNTransferModule {
   private _ready = false;
@@ -38,40 +43,46 @@ export class RNTransferModule {
     return this.helper.uuid();
   }
 
-  getDownloads(): DownloadNs.Transfer[] {
+  getDownloads(): DownloadTransfer[] {
     return this.downloader.get();
   }
 
-  getDownload(id: string): DownloadNs.Transfer | undefined {
+  getDownload(id: string): DownloadTransfer | undefined {
     return this.downloader.getOne(id);
   }
 
-  createDownload(options: DownloadNs.Options): DownloadNs.Transfer {
+  createDownload(options: DownloadOptions): DownloadTransfer {
     return this.downloader.create(options);
   }
 
-  getUploads(): UploadNs.Transfer[] {
+  getUploads(): UploadTransfer[] {
     return this.uploader.get();
   }
 
-  getUpload(id: string): UploadNs.Transfer | undefined {
+  getUpload(id: string): UploadTransfer | undefined {
     return this.uploader.getOne(id);
   }
 
-  createUpload(options: UploadNs.Options): UploadNs.Transfer {
+  createUpload(options: UploadOptions): UploadTransfer {
     return this.uploader.create(options);
   }
 }
 
 export const RNTransfer = new RNTransferModule();
 
-// const transfer = RNTransfer.createDownload({
+// const transfer1 = RNTransfer.createDownload({
 //   id: RNTransfer.uuid(),
 //   url: '.com/sample-1.png',
 //   path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
 // });
 //
-// const subscription = transfer.subscribe({
+// const transfer2 = RNTransfer.createDownload({
+//   id: RNTransfer.uuid(),
+//   url: '.com/sample-2.png',
+//   path: RNTransfer.directories.app.concat(`/files/sample-2.png`),
+// });
+//
+// const subscription = transfer1.subscribe({
 //   begin: () => {},
 //   progress: () => {},
 //   done: () => {},
@@ -81,9 +92,9 @@ export const RNTransfer = new RNTransferModule();
 // subscription.id;
 // subscription.unsubscribe();
 //
-// transfer.start();
-// transfer.stop();
-// transfer.remove();
+// transfer1.start();
+// transfer1.stop();
+// transfer1.remove();
 
 // const group = RNTransfer.createDownloadGroup({
 //   id: RNTransfer.uuid(),
@@ -108,35 +119,3 @@ export const RNTransfer = new RNTransferModule();
 // group.start();
 // group.stop();
 // group.remove();
-
-// const transfer1 = RNTransfer.createDownload({
-//   id: RNTransfer.uuid(),
-//   url: '.com/sample-1.png',
-//   path: RNTransfer.directories.app.concat(`/files/sample-1.png`),
-// });
-//
-// const transfer2 = RNTransfer.createDownload({
-//   id: RNTransfer.uuid(),
-//   url: '.com/sample-2.png',
-//   path: RNTransfer.directories.app.concat(`/files/sample-2.png`),
-// });
-//
-// transfer1
-//   .on('begin', e => {
-//     console.log(e.bytesExpect);
-//   })
-//   .on('progress', e => {
-//     console.log(e.bytesDownload);
-//     console.log(e.bytesTotal);
-//   })
-//   .on('done', e => {
-//     console.log(e.bytesDownload);
-//     console.log(e.bytesTotal);
-//     transfer1.remove();
-//   })
-//   .on('fail', e => {
-//     console.log(e.error);
-//     console.log(e.errorCode);
-//     transfer1.remove();
-//   })
-//   .start();

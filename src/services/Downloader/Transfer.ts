@@ -1,27 +1,38 @@
-import RNTransferNative from '../../../specs/NativeRNTransfer';
-import {DownloadNs, DownloadInternalNs} from '../../../types';
+import RNTransferNative from '../../specs/NativeRNTransfer';
+import {Subscription} from './Subscription';
+import {uuid} from '../../utils';
+import {
+  DownloadTransferInternal,
+  DownloadTransferInternalHandlers,
+  DownloadTransferInternalSubscriptions,
+  DownloadStatus,
+  DownloadProgress,
+  DownloadTask,
+  DownloadEvent,
+  DownloadEventListenerMap,
+} from '../../types';
 
-export class DownloadTransfer implements DownloadInternalNs.Transfer {
+export class Transfer implements DownloadTransferInternal {
   readonly id: string;
   readonly url: string;
   readonly path: string;
   readonly headers: Record<string, any> | undefined;
   readonly metadata: Record<string, any> | undefined;
 
-  readonly type: 'download' = 'download';
-  private _status: DownloadNs.Status = 'idle';
-  private _progress: DownloadNs.Progress = {
+  private _type: 'download' = 'download';
+  private _status: DownloadStatus = 'idle';
+  private _progress: DownloadProgress = {
     bytesDownload: 0,
     bytesTotal: 0,
   };
 
-  private readonly handlers: DownloadInternalNs.TransferHandlers;
-  private readonly listeners: DownloadInternalNs.TransferListeners = {
-    begin: new Set(),
-    progress: new Set(),
-    done: new Set(),
-    fail: new Set(),
-  };
+  private readonly handlers: DownloadTransferInternalHandlers;
+  private readonly subscriptions: DownloadTransferInternalSubscriptions =
+    new Map();
+
+  get type() {
+    return this._type;
+  }
 
   get status() {
     return this._status;
@@ -31,10 +42,7 @@ export class DownloadTransfer implements DownloadInternalNs.Transfer {
     return this._progress;
   }
 
-  constructor(
-    task: DownloadNs.Task,
-    handlers: DownloadInternalNs.TransferHandlers,
-  ) {
+  constructor(task: DownloadTask, handlers: DownloadTransferInternalHandlers) {
     this.handlers = handlers;
     this.id = task.id;
     this.url = task.url;
@@ -57,7 +65,19 @@ export class DownloadTransfer implements DownloadInternalNs.Transfer {
     return this.handlers.remove(this.id);
   }
 
-  apply(event: DownloadNs.Event) {
+  subscribe = (listeners: Partial<DownloadEventListenerMap>) => {
+    const id = uuid();
+    const remove = (i: string) => this.unsubscribe(i);
+    const subscription = new Subscription(id, listeners, {remove});
+    this.subscriptions.set(subscription.id, subscription);
+    return subscription;
+  };
+
+  unsubscribe = (id: string) => {
+    return this.subscriptions.delete(id);
+  };
+
+  apply(event: DownloadEvent) {
     switch (event.type) {
       case 'begin':
         this._status = 'working';
@@ -93,17 +113,9 @@ export class DownloadTransfer implements DownloadInternalNs.Transfer {
     }
   }
 
-  on<T extends DownloadNs.EventType>(
-    type: T,
-    listener: DownloadNs.EventListener<T>,
-  ): this {
-    this.listeners[type].add(listener);
-    return this;
-  }
-
-  private emit(event: DownloadNs.Event) {
-    for (const listener of this.listeners[event.type]) {
-      listener(event as any);
+  private emit(event: DownloadEvent) {
+    for (const subscription of this.subscriptions.values()) {
+      subscription.emit(event);
     }
   }
 }

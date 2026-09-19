@@ -1,27 +1,38 @@
-import RNTransferNative from '../../../specs/NativeRNTransfer';
-import {UploadNs, UploadInternalNs} from '../../../types';
+import RNTransferNative from '../../specs/NativeRNTransfer';
+import {Subscription} from './Subscription';
+import {uuid} from '../../utils';
+import {
+  UploadTransferInternal,
+  UploadTransferInternalHandlers,
+  UploadTransferInternalSubscriptions,
+  UploadStatus,
+  UploadProgress,
+  UploadTask,
+  UploadEvent,
+  UploadEventListenerMap,
+} from '../../types';
 
-export class UploadTransfer implements UploadInternalNs.Transfer {
+export class Transfer implements UploadTransferInternal {
   readonly id: string;
   readonly url: string;
   readonly path: string;
   readonly headers: Record<string, any> | undefined;
   readonly metadata: Record<string, any> | undefined;
 
-  readonly type: 'upload' = 'upload';
-  private _status: UploadNs.Status = 'idle';
-  private _progress: UploadNs.Progress = {
+  private _type: 'upload' = 'upload';
+  private _status: UploadStatus = 'idle';
+  private _progress: UploadProgress = {
     bytesUpload: 0,
     bytesTotal: 0,
   };
 
-  private readonly handlers: UploadInternalNs.TransferHandlers;
-  private readonly listeners: UploadInternalNs.TransferListeners = {
-    begin: new Set(),
-    progress: new Set(),
-    done: new Set(),
-    fail: new Set(),
-  };
+  private readonly handlers: UploadTransferInternalHandlers;
+  private readonly subscriptions: UploadTransferInternalSubscriptions =
+    new Map();
+
+  get type() {
+    return this._type;
+  }
 
   get status() {
     return this._status;
@@ -31,10 +42,7 @@ export class UploadTransfer implements UploadInternalNs.Transfer {
     return this._progress;
   }
 
-  constructor(
-    task: UploadNs.Task,
-    handlers: UploadInternalNs.TransferHandlers,
-  ) {
+  constructor(task: UploadTask, handlers: UploadTransferInternalHandlers) {
     this.handlers = handlers;
     this.id = task.id;
     this.url = task.url;
@@ -57,7 +65,19 @@ export class UploadTransfer implements UploadInternalNs.Transfer {
     return this.handlers.remove(this.id);
   }
 
-  apply(event: UploadNs.Event) {
+  subscribe = (listeners: Partial<UploadEventListenerMap>) => {
+    const id = uuid();
+    const remove = (i: string) => this.unsubscribe(i);
+    const subscription = new Subscription(id, listeners, {remove});
+    this.subscriptions.set(subscription.id, subscription);
+    return subscription;
+  };
+
+  unsubscribe = (id: string) => {
+    return this.subscriptions.delete(id);
+  };
+
+  apply(event: UploadEvent) {
     switch (event.type) {
       case 'begin':
         this._status = 'working';
@@ -93,17 +113,9 @@ export class UploadTransfer implements UploadInternalNs.Transfer {
     }
   }
 
-  on<T extends UploadNs.EventType>(
-    type: T,
-    listener: UploadNs.EventListener<T>,
-  ): this {
-    this.listeners[type].add(listener);
-    return this;
-  }
-
-  private emit(event: UploadNs.Event) {
-    for (const listener of this.listeners[event.type]) {
-      listener(event as any);
+  private emit(event: UploadEvent) {
+    for (const subscription of this.subscriptions.values()) {
+      subscription.emit(event);
     }
   }
 }

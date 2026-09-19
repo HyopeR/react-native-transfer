@@ -1,16 +1,22 @@
-import {EventSubscription} from 'react-native';
-import RNTransferNative from '../../../specs/NativeRNTransfer';
-import {DownloadTransfer} from './DownloadTransfer';
-import {DownloadNs, DownloadInternalNs} from '../../../types';
+import RNTransferNative from '../../specs/NativeRNTransfer';
+import {Transfer} from './Transfer';
+import {
+  DownloadTransferInternal,
+  DownloadTransferInternalHandlers,
+  DownloaderSubscription,
+  DownloadEvent,
+  DownloadOptions,
+  DownloadTask,
+} from '../../types';
 
 export class Downloader {
-  private readonly transfers: Map<string, DownloadInternalNs.Transfer>;
-  private readonly transferHandlers: DownloadInternalNs.TransferHandlers;
+  private readonly transfers: Map<string, DownloadTransferInternal>;
+  private readonly transferHandlers: DownloadTransferInternalHandlers;
 
-  private readonly subscription: EventSubscription;
+  private readonly subscription: DownloaderSubscription;
 
   constructor() {
-    this.transfers = new Map<string, DownloadInternalNs.Transfer>();
+    this.transfers = new Map();
     this.transferHandlers = {remove: this.remove};
     this.subscription = RNTransferNative.onDownload(this.listener);
   }
@@ -27,7 +33,7 @@ export class Downloader {
     }
   };
 
-  private listener = (event: DownloadNs.Event) => {
+  private listener = (event: DownloadEvent) => {
     const transfer = this.transfers.get(event.id);
     if (transfer) {
       transfer.apply(event);
@@ -58,13 +64,13 @@ export class Downloader {
     return undefined;
   }
 
-  public create(options: DownloadNs.Options) {
+  public create(options: DownloadOptions) {
     const task = RNTransferNative.createDownload(options);
     return this.createTransfer(task);
   }
 
-  private createTransfer = (task: DownloadNs.Task) => {
-    const transfer = new DownloadTransfer(task, this.transferHandlers);
+  private createTransfer = (task: DownloadTask) => {
+    const transfer = new Transfer(task, this.transferHandlers);
     this.transfers.set(transfer.id, transfer);
     return transfer;
   };

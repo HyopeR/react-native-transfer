@@ -1,74 +1,49 @@
+import {EventSubscription} from 'react-native';
 import {Core} from './Core';
+import {DownloadEvent, DownloadEventListenerMap} from './DownloadEvent';
+import {
+  DownloadSubscription,
+  DownloadSubscriptionInternal,
+} from './DownloadSubscription';
 
-export namespace DownloadNs {
-  export type Status = 'idle' | 'working' | 'done' | 'fail';
+/** External */
 
-  export type Progress = {
-    bytesDownload: number;
-    bytesTotal: number;
-  };
+export type DownloadStatus = 'idle' | 'working' | 'done' | 'fail';
 
-  export interface Options extends Core {}
+export type DownloadProgress = {
+  bytesDownload: number;
+  bytesTotal: number;
+};
 
-  export interface OptionsTask {
-    status: Status;
-    progress: Progress;
-  }
+export interface DownloadOptions extends Core {}
 
-  export interface Task extends Options, OptionsTask {
-    type: 'download';
-  }
-
-  export type EventMap = {
-    begin: {
-      type: 'begin';
-      id: string;
-      bytesExpect: number;
-    };
-    progress: {
-      type: 'progress';
-      id: string;
-      bytesDownload: number;
-      bytesTotal: number;
-    };
-    done: {
-      type: 'done';
-      id: string;
-      bytesDownload: number;
-      bytesTotal: number;
-    };
-    fail: {
-      type: 'fail';
-      id: string;
-      error: string;
-      errorCode: number;
-    };
-  };
-
-  export type EventType = keyof EventMap;
-
-  export type Event = EventMap[EventType];
-
-  export type EventListener<T extends EventType> = (event: EventMap[T]) => void;
-
-  export interface Transfer extends Task {
-    on<T extends EventType>(type: T, listener: EventListener<T>): this;
-    start(): void;
-    stop(): void;
-    remove(): Promise<void>;
-  }
+export interface DownloadTask extends DownloadOptions {
+  type: 'download';
+  status: DownloadStatus;
+  progress: DownloadProgress;
 }
 
-export namespace DownloadInternalNs {
-  export interface Transfer extends DownloadNs.Transfer {
-    apply(event: DownloadNs.Event): void;
-  }
-
-  export type TransferListeners = {
-    [T in DownloadNs.EventType]: Set<DownloadNs.EventListener<T>>;
-  };
-
-  export interface TransferHandlers {
-    remove: (id: string) => Promise<void>;
-  }
+export interface DownloadTransfer extends DownloadTask {
+  start(): void;
+  stop(): void;
+  remove(): Promise<void>;
+  subscribe(listeners: Partial<DownloadEventListenerMap>): DownloadSubscription;
+  unsubscribe(id: string): void;
 }
+
+/** Internal */
+
+export interface DownloadTransferInternal extends DownloadTransfer {
+  apply(event: DownloadEvent): void;
+}
+
+export interface DownloadTransferInternalHandlers {
+  remove: (id: string) => Promise<void>;
+}
+
+export type DownloadTransferInternalSubscriptions = Map<
+  string,
+  DownloadSubscriptionInternal
+>;
+
+export type DownloaderSubscription = EventSubscription;
