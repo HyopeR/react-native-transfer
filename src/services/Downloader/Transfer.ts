@@ -65,17 +65,17 @@ export class Transfer implements DownloadTransferInternal {
     return this.handlers.remove(this.id);
   }
 
-  subscribe = (listeners: Partial<DownloadEventListenerMap>) => {
+  subscribe(listeners: Partial<DownloadEventListenerMap>) {
     const id = uuid();
     const remove = (i: string) => this.unsubscribe(i);
     const subscription = new Subscription(id, listeners, {remove});
     this.subscriptions.set(subscription.id, subscription);
     return subscription;
-  };
+  }
 
-  unsubscribe = (id: string) => {
-    return this.subscriptions.delete(id);
-  };
+  unsubscribe(id: string) {
+    this.subscriptions.delete(id);
+  }
 
   apply(event: DownloadEvent) {
     switch (event.type) {

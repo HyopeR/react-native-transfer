@@ -65,17 +65,17 @@ export class Transfer implements UploadTransferInternal {
     return this.handlers.remove(this.id);
   }
 
-  subscribe = (listeners: Partial<UploadEventListenerMap>) => {
+  subscribe(listeners: Partial<UploadEventListenerMap>) {
     const id = uuid();
     const remove = (i: string) => this.unsubscribe(i);
     const subscription = new Subscription(id, listeners, {remove});
     this.subscriptions.set(subscription.id, subscription);
     return subscription;
-  };
+  }
 
-  unsubscribe = (id: string) => {
-    return this.subscriptions.delete(id);
-  };
+  unsubscribe(id: string) {
+    this.subscriptions.delete(id);
+  }
 
   apply(event: UploadEvent) {
     switch (event.type) {
