@@ -1,9 +1,14 @@
-import React, {useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native';
-import {DownloadNs} from '@hyoper/rn-transfer';
+import {
+  DownloadTransfer,
+  DownloadStatus,
+  DownloadProgress,
+  DownloadEventListener,
+} from '@hyoper/rn-transfer';
 
 export type TransferCardProps = {
-  transfer: DownloadNs.Transfer;
+  transfer: DownloadTransfer;
   onStart: () => void;
   onStop: () => void;
   onRemove: () => void;
@@ -15,50 +20,53 @@ export const TransferCard = ({
   onStop,
   onRemove,
 }: TransferCardProps) => {
-  const [status, setStatus] = useState<DownloadNs.Status>(transfer.status);
-  const [progress, setProgress] = useState<DownloadNs.Progress>(
-    transfer.progress,
-  );
+  const [status, setStatus] = useState<DownloadStatus>(transfer.status);
+  const [progress, setProgress] = useState<DownloadProgress>(transfer.progress);
 
   const percentage =
     progress.bytesTotal > 0
       ? Math.round((progress.bytesDownload / progress.bytesTotal) * 100)
       : 0;
 
+  const onBegin = useCallback<DownloadEventListener<'begin'>>(event => {
+    setStatus('working');
+    setProgress(prev => ({...prev, bytesTotal: event.bytesExpect}));
+  }, []);
+
+  const onProgress = useCallback<DownloadEventListener<'progress'>>(event => {
+    setStatus('working');
+    setProgress(prev => ({
+      ...prev,
+      bytesDownload: event.bytesDownload,
+      bytesTotal: event.bytesTotal,
+    }));
+  }, []);
+
+  const onDone = useCallback<DownloadEventListener<'done'>>(event => {
+    setStatus('done');
+    setProgress(prev => ({
+      ...prev,
+      bytesDownload: event.bytesDownload,
+      bytesTotal: event.bytesTotal,
+    }));
+  }, []);
+
+  const onFail = useCallback<DownloadEventListener<'fail'>>(event => {
+    setStatus('fail');
+  }, []);
+
   useEffect(() => {
-    const handleBegin: DownloadNs.EventListener<'begin'> = event => {
-      setStatus('working');
-      setProgress(prev => ({...prev, bytesTotal: event.bytesExpect}));
-    };
+    const subscription = transfer.subscribe({
+      begin: onBegin,
+      progress: onProgress,
+      done: onDone,
+      fail: onFail,
+    });
 
-    const handleProgress: DownloadNs.EventListener<'progress'> = event => {
-      setStatus('working');
-      setProgress(prev => ({
-        ...prev,
-        bytesDownload: event.bytesDownload,
-        bytesTotal: event.bytesTotal,
-      }));
+    return () => {
+      subscription.unsubscribe();
     };
-
-    const handleDone: DownloadNs.EventListener<'done'> = event => {
-      setStatus('done');
-      setProgress(prev => ({
-        ...prev,
-        bytesDownload: event.bytesDownload,
-        bytesTotal: event.bytesTotal,
-      }));
-    };
-
-    const handleFail: DownloadNs.EventListener<'fail'> = event => {
-      setStatus('fail');
-    };
-
-    transfer
-      .on('begin', handleBegin)
-      .on('progress', handleProgress)
-      .on('done', handleDone)
-      .on('fail', handleFail);
-  }, [transfer]);
+  }, [transfer, onBegin, onDone, onFail, onProgress]);
 
   return (
     <View style={styles.card}>
@@ -128,7 +136,7 @@ export const TransferCard = ({
             opacity: status === 'idle' ? 1 : 0.5,
           }}
           onPress={onStart}>
-          <Text>Download</Text>
+          <Text>Start</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -139,7 +147,7 @@ export const TransferCard = ({
             opacity: status === 'working' ? 1 : 0.5,
           }}
           onPress={onStop}>
-          <Text>Cancel</Text>
+          <Text>Stop</Text>
         </TouchableOpacity>
 
         <TouchableOpacity
@@ -150,7 +158,7 @@ export const TransferCard = ({
             opacity: status === 'fail' ? 1 : 0.5,
           }}
           onPress={onStart}>
-          <Text>Retry</Text>
+          <Text>Restart</Text>
         </TouchableOpacity>
 
         <TouchableOpacity

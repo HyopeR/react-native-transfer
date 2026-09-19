@@ -1,6 +1,10 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {FlatList, Text, View} from 'react-native';
-import {RNTransfer, DownloadNs} from '@hyoper/rn-transfer';
+import {
+  RNTransfer,
+  DownloadTransfer,
+  DownloadSubscription,
+} from '@hyoper/rn-transfer';
 import {Button, Screen} from '../../components/commons';
 import {TransferCard} from '../../components/specifics';
 import {PageStyle} from '../styles';
@@ -14,8 +18,10 @@ export const DownloadPage = ({back}: PageProps) => {
   ]);
 
   const [transferMap, setTransferMap] = useState<
-    Record<string, DownloadNs.Transfer>
+    Record<string, DownloadTransfer>
   >({});
+
+  const subscriptionMap = useRef<Map<string, DownloadSubscription>>(new Map());
 
   useEffect(() => {
     const transfers = RNTransfer.getDownloads();
@@ -29,19 +35,6 @@ export const DownloadPage = ({back}: PageProps) => {
     const id = RNTransfer.uuid();
     const path = RNTransfer.directories.app.concat(`/${id}.dat`);
     const transfer = RNTransfer.createDownload({id, url, path});
-    transfer
-      .on('begin', event => {
-        console.log(event);
-      })
-      .on('progress', event => {
-        console.log(event);
-      })
-      .on('done', event => {
-        console.log(event);
-      })
-      .on('fail', event => {
-        console.log(event);
-      });
     setTransferMap(prev => ({...prev, [id]: transfer}));
   };
 
@@ -53,6 +46,27 @@ export const DownloadPage = ({back}: PageProps) => {
         const {[id]: _, ...rest} = prev;
         return rest;
       });
+      subscriptionMap.current.delete(transfer.id);
+    }
+  };
+
+  const startTransfer = (transfer: DownloadTransfer) => {
+    const subscription = transfer.subscribe({
+      begin: event => console.log(event),
+      progress: event => console.log(event),
+      done: event => console.log(event),
+      fail: event => console.log(event),
+    });
+    subscriptionMap.current.set(transfer.id, subscription);
+    transfer.start();
+  };
+
+  const stopTransfer = async (transfer: DownloadTransfer) => {
+    transfer.stop();
+    const subscription = subscriptionMap.current.get(transfer.id);
+    if (subscription) {
+      subscription.unsubscribe();
+      subscriptionMap.current.delete(transfer.id);
     }
   };
 
@@ -90,8 +104,8 @@ export const DownloadPage = ({back}: PageProps) => {
             renderItem={({item}) => (
               <TransferCard
                 transfer={item}
-                onStart={() => item.start()}
-                onStop={() => item.stop()}
+                onStart={() => startTransfer(item)}
+                onStop={() => stopTransfer(item)}
                 onRemove={() => removeTransfer(item.id)}
               />
             )}
