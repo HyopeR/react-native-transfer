@@ -2,6 +2,8 @@ package com.hyoper.transfer.services.downloader;
 
 import com.hyoper.transfer.services.downloader.models.DownloadListener;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -31,16 +33,16 @@ public class DownloadQueue {
         DownloadWorker worker = workers.get(id);
         if (worker != null) {
             worker.cancel();
-            workers.remove(id);
             executor.remove(worker);
         }
     }
 
     public void clear() {
-        for (DownloadWorker worker : workers.values()) {
+        List<DownloadWorker> workerList = new ArrayList<>(workers.values());
+        workers.clear();
+        for (DownloadWorker worker : workerList) {
             worker.cancel();
         }
-        workers.clear();
         executor.shutdownNow();
     }
 }

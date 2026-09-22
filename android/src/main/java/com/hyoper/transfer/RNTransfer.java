@@ -1,8 +1,8 @@
 package com.hyoper.transfer;
 
 import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 
-import com.facebook.react.bridge.Promise;
 import com.facebook.react.bridge.ReactApplicationContext;
 import com.facebook.react.bridge.ReadableMap;
 import com.facebook.react.bridge.WritableArray;
@@ -66,11 +66,12 @@ public class RNTransfer extends NativeRNTransferSpec {
     }
 
     @Override
-    public void clearDownloads(Promise promise) {
+    public void clearDownloads() {
         downloader.clear();
-        promise.resolve(true);
     }
 
+
+    @Nullable
     @Override
     public WritableMap getDownload(String id) {
         DownloadTransfer transfer = this.downloader.getDownload(id);
@@ -89,14 +90,14 @@ public class RNTransfer extends NativeRNTransferSpec {
         return RNTransferConverter.mapFromDownloadTask(transfer);
     }
 
+    @Nullable
     @Override
-    public void removeDownload(String id, Promise promise) {
+    public WritableMap removeDownload(String id) {
         DownloadTransfer transfer = this.downloader.removeDownload(id);
         if (transfer != null) {
-            WritableMap taskMap = RNTransferConverter.mapFromDownloadTask(transfer);
-            promise.resolve(taskMap);
+            return RNTransferConverter.mapFromDownloadTask(transfer);
         } else {
-            promise.resolve(null);
+            return null;
         }
     }
 
@@ -117,11 +118,11 @@ public class RNTransfer extends NativeRNTransferSpec {
     }
 
     @Override
-    public void clearUploads(Promise promise) {
+    public void clearUploads() {
         uploader.clear();
-        promise.resolve(true);
     }
 
+    @Nullable
     @Override
     public WritableMap getUpload(String id) {
         UploadTransfer transfer = this.uploader.getUpload(id);
@@ -140,14 +141,14 @@ public class RNTransfer extends NativeRNTransferSpec {
         return RNTransferConverter.mapFromUploadTask(transfer);
     }
 
+    @Nullable
     @Override
-    public void removeUpload(String id, Promise promise) {
+    public WritableMap removeUpload(String id) {
         UploadTransfer transfer = this.uploader.removeUpload(id);
         if (transfer != null) {
-            WritableMap taskMap = RNTransferConverter.mapFromUploadTask(transfer);
-            promise.resolve(taskMap);
+            return RNTransferConverter.mapFromUploadTask(transfer);
         } else {
-            promise.resolve(null);
+            return null;
         }
     }
 

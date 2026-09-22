@@ -12,16 +12,17 @@ import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
-import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 public class DownloadWorker implements Runnable {
     private final DownloadTransfer transfer;
     private final DownloadListener listener;
     private final Runnable clean;
     private HttpURLConnection connection;
-    private volatile boolean isThreadCancel = false;
     private volatile Thread thread;
-    private final CountDownLatch threadWait = new CountDownLatch(1);
+    private volatile boolean isStarted = false;
+    private volatile boolean isCancelled = false;
+    private final AtomicBoolean isHandled = new AtomicBoolean(false);
 
     public DownloadWorker(DownloadTransfer transfer, DownloadListener listener, Runnable clean) {
         this.transfer = transfer;
@@ -31,6 +32,7 @@ public class DownloadWorker implements Runnable {
 
     @Override
     public void run() {
+        this.isStarted = true;
         File file = new File(transfer.path);
         try {
             this.thread = Thread.currentThread();
@@ -66,7 +68,7 @@ public class DownloadWorker implements Runnable {
 
                     long now = System.currentTimeMillis();
                     if (now - lastEmitTime > 250) {
-                        if (!this.isThreadCancel) {
+                        if (!this.isCancelled) {
                             lastEmitTime = now;
                             this.transfer.setProgress(bytesDownload, bytesTotal);
                             this.listener.onProgress(this.transfer.id, bytesDownload, bytesTotal);
@@ -75,33 +77,39 @@ public class DownloadWorker implements Runnable {
                 }
             }
 
-            this.transfer.setStatus("done");
-            this.transfer.setProgress(bytesTotal, bytesTotal);
-            this.listener.onDone(this.transfer.id, bytesTotal, bytesTotal);
+            if (!this.isCancelled && this.isHandled.compareAndSet(false, true)) {
+                this.transfer.setStatus("done");
+                this.transfer.setProgress(bytesTotal, bytesTotal);
+                this.listener.onDone(this.transfer.id, bytesTotal, bytesTotal);
+            }
         } catch (Exception e) {
-            this.transfer.setStatus("fail");
-            this.listener.onFail(this.transfer.id, e);
+            if (!this.isCancelled && this.isHandled.compareAndSet(false, true)) {
+                this.transfer.setStatus("fail");
+                this.listener.onFail(this.transfer.id, e);
+            }
             FileUtils.cleanFile(file);
         } finally {
-            closeConnection(this.connection);
-            clean.run();
-            this.threadWait.countDown();
+            this.closeConnection(this.connection);
+            this.clean.run();
         }
     }
 
     public void cancel() {
-        this.isThreadCancel = true;
+        this.isCancelled = true;
 
-        if (this.thread == null) return;
+        if (this.isHandled.compareAndSet(false, true)) {
+            this.transfer.setStatus("fail");
+            this.listener.onFail(this.transfer.id, new Exception("Cancelled."));
+        }
 
-        this.thread.interrupt();
+        this.closeConnection(this.connection);
 
-        closeConnection(this.connection);
+        if (this.thread != null) {
+            this.thread.interrupt();
+        }
 
-        try {
-            this.threadWait.await();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
+        if (!this.isStarted) {
+            this.clean.run();
         }
     }
 

@@ -84,7 +84,7 @@ public class Downloader {
         this.context = context.getApplicationContext();
         this.storage = MMKV.mmkvWithID(NAME);
         try {
-            loadTransfers();
+            this.loadTransfers();
         } catch (Exception e) {
             clear();
         }
@@ -106,7 +106,7 @@ public class Downloader {
             throw new IllegalArgumentException("Download ID duplication.");
         }
 
-        saveTransfer(transfer);
+        this.saveTransfer(transfer);
         return transfer;
     }
 
@@ -117,7 +117,7 @@ public class Downloader {
 
         this.queue.delete(id);
         this.transfers.remove(id);
-        removeTransfer(id);
+        this.removeTransfer(id);
 
         return transfer;
     }
