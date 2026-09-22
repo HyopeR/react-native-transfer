@@ -24,7 +24,8 @@ export class RNTransferModule {
 
   private async init() {
     try {
-      await Promise.all([this.downloader.init(), this.uploader.init()]);
+      this.downloader.init();
+      this.uploader.init();
       this._ready = true;
     } catch (e) {
       this._ready = true;

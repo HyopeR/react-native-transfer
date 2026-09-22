@@ -61,7 +61,7 @@ export class Transfer implements UploadTransferInternal {
     RNTransferNative.stopUpload(this.id);
   }
 
-  async remove() {
+  remove() {
     return this.handlers.remove(this.id);
   }
 

@@ -21,14 +21,14 @@ export class Downloader {
     this.subscription = RNTransferNative.onDownload(this.listener);
   }
 
-  public init = async () => {
+  public init = () => {
     try {
       const tasks = RNTransferNative.getDownloads();
       for (const task of tasks) {
         this.createTransfer(task);
       }
     } catch (e) {
-      await RNTransferNative.clearDownloads();
+      RNTransferNative.clearDownloads();
       this.transfers.clear();
     }
   };
@@ -75,8 +75,8 @@ export class Downloader {
     return transfer;
   };
 
-  private remove = async (id: string) => {
-    await RNTransferNative.removeDownload(id);
+  private remove = (id: string) => {
+    RNTransferNative.removeDownload(id);
     this.removeTransfer(id);
   };
 

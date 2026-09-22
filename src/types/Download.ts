@@ -26,7 +26,7 @@ export interface DownloadTask extends DownloadOptions {
 export interface DownloadTransfer extends DownloadTask {
   start(): void;
   stop(): void;
-  remove(): Promise<void>;
+  remove(): void;
   subscribe(listeners: Partial<DownloadEventListenerMap>): DownloadSubscription;
   unsubscribe(id: string): void;
 }
@@ -38,7 +38,7 @@ export interface DownloadTransferInternal extends DownloadTransfer {
 }
 
 export interface DownloadTransferInternalHandlers {
-  remove: (id: string) => Promise<void>;
+  remove: (id: string) => void;
 }
 
 export type DownloadTransferInternalSubscriptions = Map<

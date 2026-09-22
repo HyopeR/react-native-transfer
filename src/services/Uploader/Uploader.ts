@@ -21,14 +21,14 @@ export class Uploader {
     this.subscription = RNTransferNative.onUpload(this.listener);
   }
 
-  public init = async () => {
+  public init = () => {
     try {
       const tasks = RNTransferNative.getUploads();
       for (const task of tasks) {
         this.createTransfer(task);
       }
     } catch (e) {
-      await RNTransferNative.clearUploads();
+      RNTransferNative.clearUploads();
       this.transfers.clear();
     }
   };
@@ -75,8 +75,8 @@ export class Uploader {
     return transfer;
   };
 
-  private remove = async (id: string) => {
-    await RNTransferNative.removeUpload(id);
+  private remove = (id: string) => {
+    RNTransferNative.removeUpload(id);
     this.removeTransfer(id);
   };
 

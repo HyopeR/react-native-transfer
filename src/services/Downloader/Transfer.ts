@@ -61,7 +61,7 @@ export class Transfer implements DownloadTransferInternal {
     RNTransferNative.stopDownload(this.id);
   }
 
-  async remove() {
+  remove() {
     return this.handlers.remove(this.id);
   }
 

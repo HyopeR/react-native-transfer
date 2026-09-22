@@ -26,7 +26,7 @@ export interface UploadTask extends UploadOptions {
 export interface UploadTransfer extends UploadTask {
   start(): void;
   stop(): void;
-  remove(): Promise<void>;
+  remove(): void;
   subscribe(listeners: Partial<UploadEventListenerMap>): UploadSubscription;
   unsubscribe(id: string): void;
 }
@@ -38,7 +38,7 @@ export interface UploadTransferInternal extends UploadTransfer {
 }
 
 export interface UploadTransferInternalHandlers {
-  remove: (id: string) => Promise<void>;
+  remove: (id: string) => void;
 }
 
 export type UploadTransferInternalSubscriptions = Map<
